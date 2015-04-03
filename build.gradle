@@ -4,6 +4,9 @@ apply plugin: 'application'
 
 sourceCompatibility = 1.8
 version = '1.0'
+mainClassName = "jp.co.aw.practice.jdbc.Main"
+
+defaultTasks 'run'
 
 repositories {
     mavenCentral()
