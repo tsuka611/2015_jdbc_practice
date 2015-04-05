@@ -4,10 +4,12 @@ JDBCに関する演習問題です。
 ## 前提条件
 - アプリケーションが動作するDBはMySQLを前提としています。
   - MySQLがなければ`build.gradle`を修正してH2DBを利用してください。
+- 演習問題は【A・Bクラス】のものを採用しています。
 
-## 動作方法
+## アプリケーション動作方法
 - こちらのプロエジェクトをローカルにcloneします。
-- 直下にある`gradlew`（Windowsは`gradlew.bat`？）を実行するとアプリケーションが起動します。
+- 直下にある`gradlew`（Windowsは`gradlew.bat`？）を引数なしで実行するとアプリケーションが起動します。
+  - DBのマイグレーションが自動的に実行されます。個別で実行する場合は`gradlew flywayMigrate`を実行してください。
 - アプリケーション実行時にはDB接続情報を環境変数から読み込みます。以下の環境変数を設定してください。
 
 |変数|説明|例|
@@ -15,8 +17,13 @@ JDBCに関する演習問題です。
 |DB_URL|JDBC接続文字列です|jdbc:mysql://localhost/testdb|
 |DB_USER|DBの接続ユーザです|scott|
 |DB_PASSWORD|DBの接続パスワードです|tiger|
-  
+
 - `gradlew eclipse`を実行するとEclipseプロジェクトになるので、importしてから実行しても良いです。
+
+## ソースの歩き方
+- アプリケーションの実行や初期化などは`build.gradle`を見ましょう。タスクの定義が書かれています。（詳細はGradleを調べよう）
+- DBのマイグレーションについては`src/resources/db`配下のSQLファイルを見ましょう。（詳細はFlywayを見ましょう）
+- アプリケーションロジックは`build.gradle`にある`mainClassName`にあるクラスを見ましょう。そこから辿れます。
 
 ## 演習問題
 ### 講義で作成したテーブル
