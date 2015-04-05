@@ -53,50 +53,50 @@ _※デファクトスタンダードに則るでも、日本形式の「yyyy/MM
 ※削除時に確認は求めないものとする。
 削除結果のデータを標準出力して、ユーザーに知らせること。
 
-実行例)`こちらは入力値` _こちらは出力結果_
-`java JdbcTest`
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_
-`i`
-_name:_`太郎`
-_mail:_`hoge@active.co.jp`
-_tel:_`09050505555`
-_太郎を登録しました。_
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_
-_d_
-_削除したいIDを入力してください。_
-`12`
-_ID12を削除しました。_
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_
-`a`
-_1 太郎 hoge@active.co.jp 09050505555 2014/04/12_
-_2 次郎 fuga@active.co.jp 09060606666 2014/04/11_
-_3 高志 takashi@active.co.jp 09060406444 2013/04/11_
-_総勢: 3名_
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_
-`s`
-_検索したい名前を入力してください_
-`太`
-_1 太郎 hoge@active.co.jp 09050505555 2014/04/12_
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_
-`u`
-_更新対象IDを入力してください。_
-`210009`
-_210009 江口 egu@active.co.jp 09060001795 2015/04/11_
-_name:_`江口`
-_mail:_`test@active.co.jp`
-_tel_:`09060001795`
-_更新処理が完了しました。_
-_210009 江口 test@active.co.jp 09060001795 2015/04/11_
-
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_
-`q`
-_システムを終了します。_
+実行例)`こちらは入力値` _こちらは出力結果_  
+`java JdbcTest`  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_  
+`i`  
+_name:_`太郎`  
+_mail:_`hoge@active.co.jp`  
+_tel:_`09050505555`  
+_太郎を登録しました。_  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_  
+_d_  
+_削除したいIDを入力してください。_  
+`12`  
+_ID12を削除しました。_  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_  
+`a`  
+_1 太郎 hoge@active.co.jp 09050505555 2014/04/12_  
+_2 次郎 fuga@active.co.jp 09060606666 2014/04/11_  
+_3 高志 takashi@active.co.jp 09060406444 2013/04/11_  
+_総勢: 3名_  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_  
+`s`  
+_検索したい名前を入力してください_  
+`太`  
+_1 太郎 hoge@active.co.jp 09050505555 2014/04/12_  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_  
+`u`  
+_更新対象IDを入力してください。_  
+`210009`  
+_210009 江口 egu@active.co.jp 09060001795 2015/04/11_  
+_name:_`江口`  
+_mail:_`test@active.co.jp`  
+_tel_:`09060001795`  
+_更新処理が完了しました。_  
+_210009 江口 test@active.co.jp 09060001795 2015/04/11_  
+  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)_  
+`q`  
+_システムを終了します。_  
 
 
 ### Cクラス
@@ -114,39 +114,40 @@ _システムを終了します。_
 上記DMLは標準入力より選択が可能とする。 
 ユーザー操作はユーザーが「q」を選択するまで要求し続ける。
 
-実行例)`こちらは入力値` _こちらは出力結果_
-`java JdbcTest`
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / q: exit)_
-`i`
-_name:_`太郎`
-mail: hoge@active.co.jp
-_tel: `09050505555`
-_太郎を登録しました。_
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / q: exit)_
-`d`
-_削除したいIDを入力してください。_
-`12`
-_ID12を削除しました。_
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / q: exit)_
-`a`
-_1 太郎 hoge@active.co.jp 09050505555 2014/04/12_
-_2 次郎 fuga@active.co.jp 09060606666 2014/04/11_
-_3 高志 takashi@active.co.jp 09060406444 2013/04/11_
-_総勢: 3名_
-_操作を選択してください。_
-_(i: insert / d: delete / a: select all / s: select where / q: exit)_
-`s`
-_検索したい名前を入力してください_
-`太`
-_1 太郎 hoge@active.co.jp 09050505555 2014/04/12_
+実行例)`こちらは入力値` _こちらは出力結果_  
+`java JdbcTest`  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / q: exit)_  
+`i`  
+_name:_`太郎`  
+mail: hoge@active.co.jp  
+_tel: `09050505555`  
+_太郎を登録しました。_  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / q: exit)_  
+`d`  
+_削除したいIDを入力してください。_  
+`12`  
+_ID12を削除しました。_  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / q: exit)_  
+`a`  
+_1 太郎 hoge@active.co.jp 09050505555 2014/04/12_  
+_2 次郎 fuga@active.co.jp 09060606666 2014/04/11_  
+_3 高志 takashi@active.co.jp 09060406444 2013/04/11_  
+_総勢: 3名_  
+_操作を選択してください。_  
+_(i: insert / d: delete / a: select all / s: select where / q: exit)_  
+`s`  
+_検索したい名前を入力してください_  
+`太`  
+_1 太郎 hoge@active.co.jp 09050505555 2014/04/12_  
+  
+`操作を選択してください。`  
+_(i: insert / d: delete / a: select all / s: select where / q: exit)_  
+`q`  
+_システムを終了します。_  
 
-`操作を選択してください。`
-_(i: insert / d: delete / a: select all / s: select where / q: exit)_
-`q`
-_システムを終了します。_
 
 
 ### 指針
