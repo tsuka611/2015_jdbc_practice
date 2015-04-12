@@ -44,6 +44,7 @@ public class EmployeeServiceTest {
         insert("太郎", "taro@mail.com", "001-1234", df.parse("2015/04/01 01:02:03"), false);
         insert("二郎", "jiro@mail.com", "002-1234", df.parse("2015/04/02 01:02:03"), false);
         insert("さぶ", "sabu@mail.com", "003-1234", df.parse("2015/04/03 01:02:03"), true);
+        insert("しろう", "siro@mail.com", "004-1234", df.parse("2015/04/04 01:02:03"), false);
     }
 
     @After
@@ -166,6 +167,39 @@ public class EmployeeServiceTest {
             throw c.rethrow(e);
         } finally {
             c.close();
+        }
+    }
+
+    @Test
+    public void findAll_通常() throws Exception {
+        List<Employee> ret = service.findAll();
+        assertThat(ret.size(), is(3));
+        {
+            Employee e = ret.get(0);
+            assertThat(e.getId(), is(notNullValue()));
+            assertThat(e.getName(), is("太郎"));
+            assertThat(e.getMail(), is("taro@mail.com"));
+            assertThat(e.getTel(), is("001-1234"));
+            assertTimestamp(e.getUpdateDate(), "2015/04/01 01:02:03");
+            assertThat(e.getIsDeleted(), is(false));
+        }
+        {
+            Employee e = ret.get(1);
+            assertThat(e.getId(), is(notNullValue()));
+            assertThat(e.getName(), is("二郎"));
+            assertThat(e.getMail(), is("jiro@mail.com"));
+            assertThat(e.getTel(), is("002-1234"));
+            assertTimestamp(e.getUpdateDate(), "2015/04/02 01:02:03");
+            assertThat(e.getIsDeleted(), is(false));
+        }
+        {
+            Employee e = ret.get(2);
+            assertThat(e.getId(), is(notNullValue()));
+            assertThat(e.getName(), is("しろう"));
+            assertThat(e.getMail(), is("siro@mail.com"));
+            assertThat(e.getTel(), is("004-1234"));
+            assertTimestamp(e.getUpdateDate(), "2015/04/04 01:02:03");
+            assertThat(e.getIsDeleted(), is(false));
         }
     }
 

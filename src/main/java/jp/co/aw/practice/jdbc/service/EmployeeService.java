@@ -39,6 +39,29 @@ public class EmployeeService {
         return builder.build();
     }
 
+    public List<Employee> findAll() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select ").append(Joiner.on(",").join(cols())).append(" ");
+        sql.append("from ").append(tableName()).append(" ");
+        sql.append("where ").append("is_deleted = false ");
+
+        Closer closer = Closer.create();
+        List<Employee> ret = new LinkedList<>();
+        try {
+            Connection c = closer.register(wrap(checkoutConnection())).getCloseable();
+            PreparedStatement ps = closer.register(wrap(c.prepareStatement(sql.toString()))).getCloseable();
+            ResultSet rs = closer.register(wrap(ps.executeQuery())).getCloseable();
+            while (rs.next()) {
+                ret.add(buildObject(rs));
+            }
+        } catch (SQLException e) {
+            throw rethrow(closer, e);
+        } finally {
+            closeQuietly(closer);
+        }
+        return Collections.unmodifiableList(ret);
+    }
+
     public List<Employee> findLikeName(String name) {
         checkArgument(!Strings.isNullOrEmpty(name));
         StringBuilder sql = new StringBuilder();
