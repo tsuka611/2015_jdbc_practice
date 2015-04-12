@@ -30,7 +30,6 @@ public class AutocloseableWrapperTest {
                 throw new IOException("Dummy Exception.");
             }
         }
-
     }
 
     @Before
