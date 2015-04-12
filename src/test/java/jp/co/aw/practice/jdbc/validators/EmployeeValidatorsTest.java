@@ -1,4 +1,4 @@
-package jp.co.aw.practice.jdbc;
+package jp.co.aw.practice.jdbc.validators;
 
 import static jp.co.aw.practice.jdbc.utils.ValidationUtils.validate;
 import static jp.co.aw.practice.jdbc.validators.EmployeeValidators.required;
