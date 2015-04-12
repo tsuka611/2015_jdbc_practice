@@ -49,3 +49,7 @@ flyway {
 
 run.dependsOn flywayMigrate
 test.dependsOn flywayMigrate
+
+run {
+    standardInput = System.in
+}
