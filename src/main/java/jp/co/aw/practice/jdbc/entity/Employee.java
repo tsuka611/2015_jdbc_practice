@@ -10,7 +10,7 @@ import lombok.NonNull;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(builderClassName = "Builder")
 @Data
 public class Employee {
 
