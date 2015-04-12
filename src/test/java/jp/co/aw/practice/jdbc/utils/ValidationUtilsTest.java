@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 import org.junit.After;
@@ -26,19 +27,22 @@ public class ValidationUtilsTest {
 
     @Test
     public void validate_通常() {
-
+        AtomicLong failCount = new AtomicLong();
         assertThat(ValidationUtils.validate("", s -> {
+            failCount.addAndGet(1L);
             assertThat(s, is(""));
         }, isNotEmpty), is(false));
         assertThat(ValidationUtils.validate("xxx", s -> {
-            fail("This case is not failed.");
+            failCount.addAndGet(1L);
+            fail("This case should not fail.");
         }, isNotEmpty), is(true));
+        assertThat(failCount.get(), is(1L));
     }
 
     @Test
     public void validate_validationsが無い() {
         assertThat(ValidationUtils.validate("", s -> {
-            fail("This case is not failed.");
+            fail("This case should not fail.");
         }), is(true));
     }
 
@@ -46,7 +50,7 @@ public class ValidationUtilsTest {
     public void validate_validationsがnull() {
         Predicate<String>[] vs = null;
         assertThat(ValidationUtils.validate("", s -> {
-            fail("This case is not failed.");
+            fail("This case should not fail.");
         }, vs), is(true));
     }
 
