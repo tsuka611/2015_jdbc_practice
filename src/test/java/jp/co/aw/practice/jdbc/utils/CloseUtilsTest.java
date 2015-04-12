@@ -16,6 +16,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.io.Closer;
+
 public class CloseUtilsTest {
     static class MockCloseable implements Closeable {
         @Setter
@@ -62,5 +64,20 @@ public class CloseUtilsTest {
     public void closeQuietly_引数がnullもしくは空でエラーにならない() {
         CloseUtils.closeQuietly();
         CloseUtils.closeQuietly((Closeable[]) null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void rethrow_closerがnull() {
+        CloseUtils.rethrow(null, new Exception());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void rethrow_causeがnull() {
+        CloseUtils.rethrow(Closer.create(), null);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void rethrow_通常() {
+        CloseUtils.rethrow(Closer.create(), new Exception());
     }
 }
