@@ -77,6 +77,19 @@ public class ConsoleWrapperTest {
         assertThat(w.getBuffer().toString(), is(expected.toString()));
     }
 
+    @SuppressWarnings("resource")
+    @Test
+    public void println_通常() throws IOException {
+        StringReader r = new StringReader("");
+        StringWriter w = new StringWriter();
+        ConsoleWrapper c = new ConsoleWrapper(r, w);
+
+        c.println("hello");
+        c.println("Test%02d", 1);
+
+        assertThat(w.getBuffer().toString(), is(String.format("hello%nTest01%n")));
+    }
+
     class MockReader extends StringReader {
 
         @Setter

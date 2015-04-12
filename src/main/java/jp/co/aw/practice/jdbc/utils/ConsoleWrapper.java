@@ -33,6 +33,12 @@ public class ConsoleWrapper implements Closeable, AutoCloseable {
         return readLine();
     }
 
+    public void println(String fmt, Object... args) throws IOException {
+        writer.write(String.format(fmt, args));
+        writer.newLine();
+        writer.flush();
+    }
+
     @Override
     public void close() throws IOException {
         Closer c = Closer.create();
