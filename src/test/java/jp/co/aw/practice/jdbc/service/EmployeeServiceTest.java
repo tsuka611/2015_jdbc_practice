@@ -40,6 +40,7 @@ public class EmployeeServiceTest {
     @Before
     public void setUp() throws Exception {
         connection = ConnectionUtils.checkoutConnection();
+        connection.setAutoCommit(true);
         service = new EmployeeService();
 
         deleteRecords();
