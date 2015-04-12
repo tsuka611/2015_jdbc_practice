@@ -105,6 +105,7 @@ public class EmployeeService {
             while (rs.next()) {
                 ret.add(buildObject(rs));
             }
+            c.commit();
         } catch (SQLException e) {
             throw rethrow(closer, e);
         } finally {
@@ -130,10 +131,11 @@ public class EmployeeService {
             ps.setString(++index, Strings.emptyToNull(tel));
             ps.setTimestamp(++index, now());
             ps.executeUpdate();
-
             ResultSet rs = closer.register(wrap(ps.getGeneratedKeys())).getCloseable();
             rs.next();
-            return rs.getLong(1);
+            long id = rs.getLong(1);
+            c.commit();
+            return id;
         } catch (SQLException e) {
             throw rethrow(closer, e);
         } finally {
@@ -161,7 +163,9 @@ public class EmployeeService {
             ps.setString(++index, Strings.emptyToNull(tel));
             ps.setTimestamp(++index, now());
             ps.setLong(++index, id);
-            return ps.executeUpdate();
+            int count = ps.executeUpdate();
+            c.commit();
+            return count;
         } catch (SQLException e) {
             throw rethrow(closer, e);
         } finally {
@@ -184,7 +188,9 @@ public class EmployeeService {
             int index = 0;
             ps.setTimestamp(++index, now());
             ps.setLong(++index, id);
-            return ps.executeUpdate();
+            int count = ps.executeUpdate();
+            c.commit();
+            return count;
         } catch (SQLException e) {
             throw rethrow(closer, e);
         } finally {

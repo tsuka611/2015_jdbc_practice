@@ -61,7 +61,9 @@ public class ConnectionUtils {
 
     static Connection checkoutConnection(String url) {
         try {
-            return DriverManager.getConnection(url);
+            Connection c = DriverManager.getConnection(url);
+            c.setAutoCommit(false);
+            return c;
         } catch (SQLException e) {
             log.error("Get Connection from DriverManager failed.");
             throw new ApplicationException(e);
