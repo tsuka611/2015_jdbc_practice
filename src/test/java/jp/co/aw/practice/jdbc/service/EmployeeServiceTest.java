@@ -1,7 +1,14 @@
 package jp.co.aw.practice.jdbc.service;
 
+import static jp.co.aw.practice.jdbc.dbcp.ConnectionUtils.checkoutConnection;
 import static jp.co.aw.practice.jdbc.utils.AutocloseableWrapper.wrap;
+import static jp.co.aw.practice.jdbc.utils.CloseUtils.closeQuietly;
+import static jp.co.aw.practice.jdbc.utils.CloseUtils.rethrow;
+import static jp.co.aw.practice.jdbc.utils.DateUtils.parse;
+import static jp.co.aw.practice.jdbc.utils.DateUtils.ts;
+import static jp.co.aw.practice.jdbc.utils.UnitTestUtils.assertTimestamp;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -9,11 +16,8 @@ import static org.junit.Assert.assertThat;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -26,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.io.Closer;
 
 public class EmployeeServiceTest {
@@ -40,11 +43,10 @@ public class EmployeeServiceTest {
         service = new EmployeeService();
 
         deleteRecords();
-        DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        insert("太郎", "taro@mail.com", "001-1234", df.parse("2015/04/01 01:02:03"), false);
-        insert("二郎", "jiro@mail.com", "002-1234", df.parse("2015/04/02 01:02:03"), false);
-        insert("さぶ", "sabu@mail.com", "003-1234", df.parse("2015/04/03 01:02:03"), true);
-        insert("しろう", "siro@mail.com", "004-1234", df.parse("2015/04/04 01:02:03"), false);
+        insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        insert("二郎", "jiro@mail.com", "002-1234", parse("2015/04/02 01:02:03"), false);
+        insert("さぶ", "sabu@mail.com", "003-1234", parse("2015/04/03 01:02:03"), true);
+        insert("しろう", "siro@mail.com", "004-1234", parse("2015/04/04 01:02:03"), false);
     }
 
     @After
@@ -53,17 +55,6 @@ public class EmployeeServiceTest {
         if (connection != null)
             c.register(wrap(connection));
         c.close();
-    }
-
-    static void assertTimestamp(Timestamp ts, String str) throws ParseException {
-        if (Strings.isNullOrEmpty(str)) {
-            assertThat(ts, is(nullValue()));
-            return;
-        }
-        assertThat(ts, is(notNullValue()));
-        DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date expected = df.parse(str);
-        assertThat(String.format(String.format("Expected [%s] but was [%s]", expected, ts)), ts.getTime(), is(expected.getTime()));
     }
 
     void deleteRecords() throws Exception {
@@ -89,7 +80,7 @@ public class EmployeeServiceTest {
             ps.setString(++index, name);
             ps.setString(++index, mail);
             ps.setString(++index, tel);
-            ps.setString(++index, updateDate == null ? null : new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(updateDate));
+            ps.setTimestamp(++index, ts(updateDate));
             ps.setInt(++index, isDeleted ? 1 : 0);
             ps.executeUpdate();
 
@@ -100,6 +91,26 @@ public class EmployeeServiceTest {
             throw c.rethrow(e);
         } finally {
             c.close();
+        }
+    }
+
+    static Employee findById(long id) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select ").append(Joiner.on(",").join(EmployeeService.cols())).append(" ");
+        sql.append("from ").append(EmployeeService.tableName()).append(" ");
+        sql.append("where ").append("id = ?");
+
+        Closer closer = Closer.create();
+        try {
+            Connection c = closer.register(wrap(checkoutConnection())).getCloseable();
+            PreparedStatement ps = closer.register(wrap(c.prepareStatement(sql.toString()))).getCloseable();
+            ps.setLong(1, id);
+            ResultSet rs = closer.register(wrap(ps.executeQuery())).getCloseable();
+            return rs.next() ? EmployeeService.buildObject(rs) : null;
+        } catch (SQLException e) {
+            throw rethrow(closer, e);
+        } finally {
+            closeQuietly(closer);
         }
     }
 
@@ -116,8 +127,7 @@ public class EmployeeServiceTest {
     @Test
     public void buildObject_通常() throws Exception {
         deleteRecords();
-        DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        long id = insert("太郎", "taro@mail.com", "001-1234", df.parse("2015/04/01 01:02:03"), false);
+        long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
 
         Closer c = Closer.create();
         try {
@@ -132,7 +142,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("太郎"));
             assertThat(e.getMail(), is("taro@mail.com"));
             assertThat(e.getTel(), is("001-1234"));
-            assertTimestamp(e.getUpdateDate(), "2015/04/01 01:02:03");
+            assertTimestamp(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
 
         } catch (Exception e) {
@@ -180,7 +190,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("太郎"));
             assertThat(e.getMail(), is("taro@mail.com"));
             assertThat(e.getTel(), is("001-1234"));
-            assertTimestamp(e.getUpdateDate(), "2015/04/01 01:02:03");
+            assertTimestamp(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
         {
@@ -189,7 +199,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("二郎"));
             assertThat(e.getMail(), is("jiro@mail.com"));
             assertThat(e.getTel(), is("002-1234"));
-            assertTimestamp(e.getUpdateDate(), "2015/04/02 01:02:03");
+            assertTimestamp(e.getUpdateDate(), parse("2015/04/02 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
         {
@@ -198,9 +208,35 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("しろう"));
             assertThat(e.getMail(), is("siro@mail.com"));
             assertThat(e.getTel(), is("004-1234"));
-            assertTimestamp(e.getUpdateDate(), "2015/04/04 01:02:03");
+            assertTimestamp(e.getUpdateDate(), parse("2015/04/04 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
+    }
+
+    @Test
+    public void findById_値が取得できない() throws Exception {
+        long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        Employee ret = service.findById(id + 999L);
+        assertThat(ret, is(nullValue()));
+    }
+
+    @Test
+    public void findById_削除されたレコードが取得されない() throws Exception {
+        long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), true);
+        Employee ret = service.findById(id);
+        assertThat(ret, is(nullValue()));
+    }
+
+    @Test
+    public void findById_通常() throws Exception {
+        long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        Employee ret = service.findById(id);
+        assertThat(ret.getId(), is(id));
+        assertThat(ret.getName(), is("太郎"));
+        assertThat(ret.getMail(), is("taro@mail.com"));
+        assertThat(ret.getTel(), is("001-1234"));
+        assertTimestamp(ret.getUpdateDate(), parse("2015/04/01 01:02:03"));
+        assertThat(ret.getIsDeleted(), is(false));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -235,7 +271,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("太郎"));
             assertThat(e.getMail(), is("taro@mail.com"));
             assertThat(e.getTel(), is("001-1234"));
-            assertTimestamp(e.getUpdateDate(), "2015/04/01 01:02:03");
+            assertTimestamp(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
         {
@@ -244,17 +280,16 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("二郎"));
             assertThat(e.getMail(), is("jiro@mail.com"));
             assertThat(e.getTel(), is("002-1234"));
-            assertTimestamp(e.getUpdateDate(), "2015/04/02 01:02:03");
+            assertTimestamp(e.getUpdateDate(), parse("2015/04/02 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
     }
 
     @Test
     public void findLikeName_エスケープ文字で正しく値が取得される() throws Exception {
-        DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        insert("%%%", "taro@mail.com", "001-1234", df.parse("2015/04/01 01:02:03"), false);
-        insert("___", "jiro@mail.com", "002-1234", df.parse("2015/04/02 01:02:03"), false);
-        insert("$$$", "sabu@mail.com", "003-1234", df.parse("2015/04/03 01:02:03"), false);
+        insert("%%%", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        insert("___", "jiro@mail.com", "002-1234", parse("2015/04/02 01:02:03"), false);
+        insert("$$$", "sabu@mail.com", "003-1234", parse("2015/04/03 01:02:03"), false);
 
         {
             List<Employee> ret = service.findLikeName("%%%");
@@ -271,5 +306,158 @@ public class EmployeeServiceTest {
             assertThat(ret.size(), is(1));
             assertThat(ret.get(0).getName(), is("$$$"));
         }
+    }
+
+    @Test
+    public void insert_通常() {
+        long id = service.insert("テスト太郎", "test-mail@example.com", "999-1234");
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎"));
+        assertThat(db.getMail(), is("test-mail@example.com"));
+        assertThat(db.getTel(), is("999-1234"));
+        assertThat(db.getUpdateDate(), is(notNullValue()));
+        assertThat(db.getIsDeleted(), is(false));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void insert_nameがnull() {
+        service.insert(null, "test-mail@example.com", "999-1234");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void insert_nameが空() {
+        service.insert("", "test-mail@example.com", "999-1234");
+    }
+
+    @Test
+    public void insert_mailとtelがnull() {
+        long id = service.insert("テスト太郎", null, null);
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎"));
+        assertThat(db.getMail(), is(nullValue()));
+        assertThat(db.getTel(), is(nullValue()));
+        assertThat(db.getUpdateDate(), is(notNullValue()));
+        assertThat(db.getIsDeleted(), is(false));
+    }
+
+    @Test
+    public void insert_mailとtelが空() {
+        long id = service.insert("テスト太郎", "", "");
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎"));
+        assertThat(db.getMail(), is(nullValue()));
+        assertThat(db.getTel(), is(nullValue()));
+        assertThat(db.getUpdateDate(), is(notNullValue()));
+        assertThat(db.getIsDeleted(), is(false));
+    }
+
+    @Test
+    public void update_通常() throws Exception {
+        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        int ret = service.update(id, "テスト太郎2", "test-mail2@example.com", "111-1234");
+        assertThat(ret, is(1));
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎2"));
+        assertThat(db.getMail(), is("test-mail2@example.com"));
+        assertThat(db.getTel(), is("111-1234"));
+        assertThat(db.getUpdateDate(), is(notNullValue()));
+        assertThat(db.getUpdateDate().getTime(), is(not(parse("2015/04/11 01:02:03").getTime())));
+        assertThat(db.getIsDeleted(), is(false));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void update_nameがnull() throws Exception {
+        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        service.update(id, null, "test-mail2@example.com", "111-1234");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void update_nameが空() throws Exception {
+        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        service.update(id, "", "test-mail2@example.com", "111-1234");
+    }
+
+    @Test
+    public void update_mailとtelがnull() throws Exception {
+        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        int ret = service.update(id, "テスト太郎2", null, null);
+        assertThat(ret, is(1));
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎2"));
+        assertThat(db.getMail(), is(nullValue()));
+        assertThat(db.getTel(), is(nullValue()));
+        assertThat(db.getUpdateDate(), is(notNullValue()));
+        assertThat(db.getUpdateDate().getTime(), is(not(parse("2015/04/11 01:02:03").getTime())));
+        assertThat(db.getIsDeleted(), is(false));
+    }
+
+    @Test
+    public void update_mailとtelが空() throws Exception {
+        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        int ret = service.update(id, "テスト太郎2", "", "");
+        assertThat(ret, is(1));
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎2"));
+        assertThat(db.getMail(), is(nullValue()));
+        assertThat(db.getTel(), is(nullValue()));
+        assertThat(db.getUpdateDate(), is(notNullValue()));
+        assertThat(db.getUpdateDate().getTime(), is(not(parse("2015/04/11 01:02:03").getTime())));
+        assertThat(db.getIsDeleted(), is(false));
+    }
+
+    @Test
+    public void update_削除レコードは更新されない() throws Exception {
+        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), true);
+        int ret = service.update(id, "テスト太郎2", "test-mail2@example.com", "111-1234");
+        assertThat(ret, is(0));
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎"));
+        assertThat(db.getMail(), is("test-mail@example.com"));
+        assertThat(db.getTel(), is("999-1234"));
+        assertTimestamp(db.getUpdateDate(), parse("2015/04/11 01:02:03"));
+        assertThat(db.getIsDeleted(), is(true));
+    }
+
+    @Test
+    public void update_対象レコードがない場合() throws Exception {
+        deleteRecords();
+        int ret = service.update(1L, "テスト太郎2", "test-mail2@example.com", "111-1234");
+        assertThat(ret, is(0));
+    }
+
+    @Test
+    public void delete_通常() throws Exception {
+        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        int ret = service.delete(id);
+        assertThat(ret, is(1));
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎"));
+        assertThat(db.getMail(), is("test-mail@example.com"));
+        assertThat(db.getTel(), is("999-1234"));
+        assertThat(db.getUpdateDate(), is(notNullValue()));
+        assertThat(db.getUpdateDate().getTime(), is(not(parse("2015/04/11 01:02:03").getTime())));
+        assertThat(db.getIsDeleted(), is(true));
+    }
+
+    @Test
+    public void delete_削除済みレコードは更新されない() throws Exception {
+        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), true);
+        int ret = service.delete(id);
+        assertThat(ret, is(0));
+        Employee db = findById(id);
+        assertThat(db.getId(), is(notNullValue()));
+        assertThat(db.getName(), is("テスト太郎"));
+        assertThat(db.getMail(), is("test-mail@example.com"));
+        assertThat(db.getTel(), is("999-1234"));
+        assertTimestamp(db.getUpdateDate(), parse("2015/04/11 01:02:03"));
+        assertThat(db.getIsDeleted(), is(true));
     }
 }
