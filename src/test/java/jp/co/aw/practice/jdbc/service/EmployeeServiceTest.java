@@ -7,6 +7,7 @@ import static jp.co.aw.practice.jdbc.utils.CloseUtils.rethrow;
 import static jp.co.aw.practice.jdbc.utils.DateUtils.parse;
 import static jp.co.aw.practice.jdbc.utils.DateUtils.ts;
 import static jp.co.aw.practice.jdbc.utils.UnitTestUtils.assertZonedDateTime;
+import static jp.co.aw.practice.jdbc.utils.UnitTestUtils.deleteTables;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -43,7 +44,7 @@ public class EmployeeServiceTest {
         connection.setAutoCommit(true);
         service = new EmployeeService();
 
-        deleteRecords();
+        deleteTables(connection, EmployeeService.tableName());
         insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
         insert("二郎", "jiro@mail.com", "002-1234", parse("2015/04/02 01:02:03"), false);
         insert("さぶ", "sabu@mail.com", "003-1234", parse("2015/04/03 01:02:03"), true);
@@ -56,18 +57,6 @@ public class EmployeeServiceTest {
         if (connection != null)
             c.register(wrap(connection));
         c.close();
-    }
-
-    void deleteRecords() throws Exception {
-        Closer c = Closer.create();
-        try {
-            Statement st = c.register(wrap(connection.createStatement())).getCloseable();
-            st.executeUpdate("delete from test");
-        } catch (Exception e) {
-            throw c.rethrow(e);
-        } finally {
-            c.close();
-        }
     }
 
     long insert(String name, String mail, String tel, ZonedDateTime updateDate, boolean isDeleted) throws Exception {
@@ -127,7 +116,7 @@ public class EmployeeServiceTest {
 
     @Test
     public void buildObject_通常() throws Exception {
-        deleteRecords();
+        deleteTables(connection, EmployeeService.tableName());
         long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
 
         Closer c = Closer.create();
@@ -155,7 +144,7 @@ public class EmployeeServiceTest {
 
     @Test
     public void buildObject_nullを含む削除オブジェクト() throws Exception {
-        deleteRecords();
+        deleteTables(connection, EmployeeService.tableName());
         long id = insert("太郎", null, null, null, true);
 
         Closer c = Closer.create();
@@ -428,7 +417,7 @@ public class EmployeeServiceTest {
 
     @Test
     public void update_対象レコードがない場合() throws Exception {
-        deleteRecords();
+        deleteTables(connection, EmployeeService.tableName());
         int ret = service.update(1L, "テスト太郎2", "test-mail2@example.com", "111-1234");
         assertThat(ret, is(0));
     }

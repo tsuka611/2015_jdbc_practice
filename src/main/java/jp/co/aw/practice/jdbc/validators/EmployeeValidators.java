@@ -11,6 +11,12 @@ public class EmployeeValidators {
     }
 
     @SuppressWarnings("unchecked")
+    public static Predicate<String>[] validId() {
+        Predicate<String> idCheck = s -> Strings.isNullOrEmpty(s) || s.matches("\\d{1,11}");
+        return new Predicate[] { required(), idCheck };
+    }
+
+    @SuppressWarnings("unchecked")
     public static Predicate<String>[] validName() {
         return new Predicate[] { required() };
     }

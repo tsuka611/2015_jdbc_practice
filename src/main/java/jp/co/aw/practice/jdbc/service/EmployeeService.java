@@ -28,7 +28,7 @@ import com.google.common.io.Closer;
 
 public class EmployeeService {
 
-    static String tableName() {
+    public static String tableName() {
         return "test";
     }
 

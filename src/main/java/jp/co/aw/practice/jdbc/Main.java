@@ -5,6 +5,8 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import jp.co.aw.practice.jdbc.operations.FacadeOperation;
+import jp.co.aw.practice.jdbc.operations.InsertOperation;
 import jp.co.aw.practice.jdbc.service.EmployeeService;
 import jp.co.aw.practice.jdbc.utils.ConsoleWrapper;
 
@@ -20,7 +22,12 @@ public class Main {
             Writer w = System.console() != null ? System.console().writer() : new OutputStreamWriter(System.out);
 
             ConsoleWrapper cw = closer.register(new ConsoleWrapper(r, w));
-            ConsoleExecutor exec = ConsoleExecutor.builder().employeeService(new EmployeeService()).build();
+            EmployeeService employeeService = new EmployeeService();
+            InsertOperation insertOperation = InsertOperation.builder().employeeService(employeeService).build();
+            FacadeOperation exec = FacadeOperation.builder() //
+                    .employeeService(employeeService) //
+                    .insertOperation(insertOperation)//
+                    .build();
             exec.execute(cw);
         } catch (Exception e) {
             throw closer.rethrow(e);

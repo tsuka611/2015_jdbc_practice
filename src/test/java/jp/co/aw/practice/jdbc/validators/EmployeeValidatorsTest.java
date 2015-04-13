@@ -2,6 +2,7 @@ package jp.co.aw.practice.jdbc.validators;
 
 import static jp.co.aw.practice.jdbc.utils.ValidationUtils.validate;
 import static jp.co.aw.practice.jdbc.validators.EmployeeValidators.required;
+import static jp.co.aw.practice.jdbc.validators.EmployeeValidators.validId;
 import static jp.co.aw.practice.jdbc.validators.EmployeeValidators.validMail;
 import static jp.co.aw.practice.jdbc.validators.EmployeeValidators.validName;
 import static jp.co.aw.practice.jdbc.validators.EmployeeValidators.validTel;
@@ -36,30 +37,54 @@ public class EmployeeValidatorsTest {
     }
 
     @Test
-    public void validName_通常() {
-
-        {
+    public void validId_通常() {
+        List<String> successFormat = Arrays.asList(//
+                "0",//
+                "01",//
+                "12345678901");
+        for (String value : successFormat) {
             AtomicLong failCount = new AtomicLong();
-            String value = "hello";
-            assertThat(validate(value, s -> {
+            assertThat(String.format("check [%s] failed.", value), validate(value, s -> {
                 failCount.addAndGet(1L);
-                fail("This case should not fail.");
+                fail(String.format("[%s]This case should not fail.", s));
+            }, validId()), is(true));
+            assertThat(failCount.get(), is(0L));
+        }
+
+        List<String> failFormat = Arrays.asList( //
+                null, //
+                "",//
+                "1a", "-1",//
+                "123456789012");
+        for (String value : failFormat) {
+            AtomicLong failCount = new AtomicLong();
+            assertThat(String.format("check [%s] failed.", value), validate(value, s -> {
+                failCount.addAndGet(1L);
+                assertThat(s, is(value));
+            }, validId()), is(false));
+            assertThat(failCount.get(), is(1L));
+        }
+    }
+
+    @Test
+    public void validName_通常() {
+        List<String> successFormat = Arrays.asList(//
+                "hello");
+        for (String value : successFormat) {
+            AtomicLong failCount = new AtomicLong();
+            assertThat(String.format("check [%s] failed.", value), validate(value, s -> {
+                failCount.addAndGet(1L);
+                fail(String.format("[%s]This case should not fail.", s));
             }, validName()), is(true));
             assertThat(failCount.get(), is(0L));
         }
-        {
+
+        List<String> failFormat = Arrays.asList( //
+                null, //
+                "");
+        for (String value : failFormat) {
             AtomicLong failCount = new AtomicLong();
-            String value = null;
-            assertThat(validate(value, s -> {
-                failCount.addAndGet(1L);
-                assertThat(s, is(value));
-            }, validName()), is(false));
-            assertThat(failCount.get(), is(1L));
-        }
-        {
-            AtomicLong failCount = new AtomicLong();
-            String value = "";
-            assertThat(validate(value, s -> {
+            assertThat(String.format("check [%s] failed.", value), validate(value, s -> {
                 failCount.addAndGet(1L);
                 assertThat(s, is(value));
             }, validName()), is(false));
@@ -82,7 +107,6 @@ public class EmployeeValidatorsTest {
 
     @Test
     public void validMail_通常() {
-
         List<String> successFormat = Arrays.asList(//
                 null,//
                 "",//
