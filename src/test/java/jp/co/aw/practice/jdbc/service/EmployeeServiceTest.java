@@ -1,6 +1,5 @@
 package jp.co.aw.practice.jdbc.service;
 
-import static jp.co.aw.practice.jdbc.dbcp.ConnectionUtils.checkoutConnection;
 import static jp.co.aw.practice.jdbc.utils.AutocloseableWrapper.wrap;
 import static jp.co.aw.practice.jdbc.utils.CloseUtils.closeQuietly;
 import static jp.co.aw.practice.jdbc.utils.CloseUtils.rethrow;
@@ -25,6 +24,7 @@ import java.util.List;
 
 import jp.co.aw.practice.jdbc.dbcp.ConnectionUtils;
 import jp.co.aw.practice.jdbc.entity.Employee;
+import jp.co.aw.practice.jdbc.utils.CloseUtils;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,25 +45,22 @@ public class EmployeeServiceTest {
         service = new EmployeeService();
 
         deleteTables(connection, EmployeeService.tableName());
-        insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
-        insert("二郎", "jiro@mail.com", "002-1234", parse("2015/04/02 01:02:03"), false);
-        insert("さぶ", "sabu@mail.com", "003-1234", parse("2015/04/03 01:02:03"), true);
-        insert("しろう", "siro@mail.com", "004-1234", parse("2015/04/04 01:02:03"), false);
+        insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        insert(connection, "二郎", "jiro@mail.com", "002-1234", parse("2015/04/02 01:02:03"), false);
+        insert(connection, "さぶ", "sabu@mail.com", "003-1234", parse("2015/04/03 01:02:03"), true);
+        insert(connection, "しろう", "siro@mail.com", "004-1234", parse("2015/04/04 01:02:03"), false);
     }
 
     @After
-    public void tearDown() throws Exception {
-        Closer c = Closer.create();
-        if (connection != null)
-            c.register(wrap(connection));
-        c.close();
+    public void tearDown() {
+        CloseUtils.autocloseQuietly(connection);
     }
 
-    long insert(String name, String mail, String tel, ZonedDateTime updateDate, boolean isDeleted) throws Exception {
-        Closer c = Closer.create();
+    public static long insert(Connection c, String name, String mail, String tel, ZonedDateTime updateDate, boolean isDeleted) throws Exception {
+        Closer closer = Closer.create();
         try {
-            PreparedStatement ps = c.register(
-                    wrap(connection.prepareStatement("insert into test(name, mail, tel, update_date, is_deleted) values (?, ?, ?, ?, ?);",
+            PreparedStatement ps = closer.register(
+                    wrap(c.prepareStatement("insert into test(name, mail, tel, update_date, is_deleted) values (?, ?, ?, ?, ?);",
                             Statement.RETURN_GENERATED_KEYS))).getCloseable();
 
             int index = 0;
@@ -74,17 +71,17 @@ public class EmployeeServiceTest {
             ps.setInt(++index, isDeleted ? 1 : 0);
             ps.executeUpdate();
 
-            ResultSet rs = c.register(wrap(ps.getGeneratedKeys())).getCloseable();
+            ResultSet rs = closer.register(wrap(ps.getGeneratedKeys())).getCloseable();
             rs.next();
             return rs.getLong(1);
         } catch (Exception e) {
-            throw c.rethrow(e);
+            throw closer.rethrow(e);
         } finally {
-            c.close();
+            closer.close();
         }
     }
 
-    static Employee findById(long id) {
+    public static Employee findById(Connection c, long id) {
         StringBuilder sql = new StringBuilder();
         sql.append("select ").append(Joiner.on(",").join(EmployeeService.cols())).append(" ");
         sql.append("from ").append(EmployeeService.tableName()).append(" ");
@@ -92,7 +89,6 @@ public class EmployeeServiceTest {
 
         Closer closer = Closer.create();
         try {
-            Connection c = closer.register(wrap(checkoutConnection())).getCloseable();
             PreparedStatement ps = closer.register(wrap(c.prepareStatement(sql.toString()))).getCloseable();
             ps.setLong(1, id);
             ResultSet rs = closer.register(wrap(ps.executeQuery())).getCloseable();
@@ -117,7 +113,7 @@ public class EmployeeServiceTest {
     @Test
     public void buildObject_通常() throws Exception {
         deleteTables(connection, EmployeeService.tableName());
-        long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        long id = insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
 
         Closer c = Closer.create();
         try {
@@ -145,7 +141,7 @@ public class EmployeeServiceTest {
     @Test
     public void buildObject_nullを含む削除オブジェクト() throws Exception {
         deleteTables(connection, EmployeeService.tableName());
-        long id = insert("太郎", null, null, null, true);
+        long id = insert(connection, "太郎", null, null, null, true);
 
         Closer c = Closer.create();
         try {
@@ -205,21 +201,21 @@ public class EmployeeServiceTest {
 
     @Test
     public void findById_値が取得できない() throws Exception {
-        long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        long id = insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
         Employee ret = service.findById(id + 999L);
         assertThat(ret, is(nullValue()));
     }
 
     @Test
     public void findById_削除されたレコードが取得されない() throws Exception {
-        long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), true);
+        long id = insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), true);
         Employee ret = service.findById(id);
         assertThat(ret, is(nullValue()));
     }
 
     @Test
     public void findById_通常() throws Exception {
-        long id = insert("太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        long id = insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
         Employee ret = service.findById(id);
         assertThat(ret.getId(), is(id));
         assertThat(ret.getName(), is("太郎"));
@@ -277,9 +273,9 @@ public class EmployeeServiceTest {
 
     @Test
     public void findLikeName_エスケープ文字で正しく値が取得される() throws Exception {
-        insert("%%%", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
-        insert("___", "jiro@mail.com", "002-1234", parse("2015/04/02 01:02:03"), false);
-        insert("$$$", "sabu@mail.com", "003-1234", parse("2015/04/03 01:02:03"), false);
+        insert(connection, "%%%", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
+        insert(connection, "___", "jiro@mail.com", "002-1234", parse("2015/04/02 01:02:03"), false);
+        insert(connection, "$$$", "sabu@mail.com", "003-1234", parse("2015/04/03 01:02:03"), false);
 
         {
             List<Employee> ret = service.findLikeName("%%%");
@@ -301,7 +297,7 @@ public class EmployeeServiceTest {
     @Test
     public void insert_通常() {
         long id = service.insert("テスト太郎", "test-mail@example.com", "999-1234");
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎"));
         assertThat(db.getMail(), is("test-mail@example.com"));
@@ -323,7 +319,7 @@ public class EmployeeServiceTest {
     @Test
     public void insert_mailとtelがnull() {
         long id = service.insert("テスト太郎", null, null);
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎"));
         assertThat(db.getMail(), is(nullValue()));
@@ -335,7 +331,7 @@ public class EmployeeServiceTest {
     @Test
     public void insert_mailとtelが空() {
         long id = service.insert("テスト太郎", "", "");
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎"));
         assertThat(db.getMail(), is(nullValue()));
@@ -346,10 +342,10 @@ public class EmployeeServiceTest {
 
     @Test
     public void update_通常() throws Exception {
-        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         int ret = service.update(id, "テスト太郎2", "test-mail2@example.com", "111-1234");
         assertThat(ret, is(1));
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎2"));
         assertThat(db.getMail(), is("test-mail2@example.com"));
@@ -361,22 +357,22 @@ public class EmployeeServiceTest {
 
     @Test(expected = RuntimeException.class)
     public void update_nameがnull() throws Exception {
-        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         service.update(id, null, "test-mail2@example.com", "111-1234");
     }
 
     @Test(expected = RuntimeException.class)
     public void update_nameが空() throws Exception {
-        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         service.update(id, "", "test-mail2@example.com", "111-1234");
     }
 
     @Test
     public void update_mailとtelがnull() throws Exception {
-        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         int ret = service.update(id, "テスト太郎2", null, null);
         assertThat(ret, is(1));
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎2"));
         assertThat(db.getMail(), is(nullValue()));
@@ -388,10 +384,10 @@ public class EmployeeServiceTest {
 
     @Test
     public void update_mailとtelが空() throws Exception {
-        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         int ret = service.update(id, "テスト太郎2", "", "");
         assertThat(ret, is(1));
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎2"));
         assertThat(db.getMail(), is(nullValue()));
@@ -403,10 +399,10 @@ public class EmployeeServiceTest {
 
     @Test
     public void update_削除レコードは更新されない() throws Exception {
-        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), true);
+        long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), true);
         int ret = service.update(id, "テスト太郎2", "test-mail2@example.com", "111-1234");
         assertThat(ret, is(0));
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎"));
         assertThat(db.getMail(), is("test-mail@example.com"));
@@ -424,10 +420,10 @@ public class EmployeeServiceTest {
 
     @Test
     public void delete_通常() throws Exception {
-        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
+        long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         int ret = service.delete(id);
         assertThat(ret, is(1));
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎"));
         assertThat(db.getMail(), is("test-mail@example.com"));
@@ -439,10 +435,10 @@ public class EmployeeServiceTest {
 
     @Test
     public void delete_削除済みレコードは更新されない() throws Exception {
-        long id = insert("テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), true);
+        long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), true);
         int ret = service.delete(id);
         assertThat(ret, is(0));
-        Employee db = findById(id);
+        Employee db = findById(connection, id);
         assertThat(db.getId(), is(notNullValue()));
         assertThat(db.getName(), is("テスト太郎"));
         assertThat(db.getMail(), is("test-mail@example.com"));
