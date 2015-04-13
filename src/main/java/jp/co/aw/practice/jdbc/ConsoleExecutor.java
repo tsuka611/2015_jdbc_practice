@@ -7,10 +7,7 @@ import static jp.co.aw.practice.jdbc.validators.EmployeeValidators.validName;
 import java.io.IOException;
 
 import jp.co.aw.practice.jdbc.service.EmployeeService;
-import jp.co.aw.practice.jdbc.utils.CloseUtils;
 import jp.co.aw.practice.jdbc.utils.ConsoleWrapper;
-import jp.co.aw.practice.jdbc.utils.ValidationUtils;
-import jp.co.aw.practice.jdbc.validators.EmployeeValidators;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
