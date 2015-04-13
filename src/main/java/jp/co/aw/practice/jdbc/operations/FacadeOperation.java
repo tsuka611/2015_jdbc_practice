@@ -13,9 +13,10 @@ public class FacadeOperation implements Operation {
 
     @NonNull
     EmployeeService employeeService;
-
     @NonNull
     Operation insertOperation;
+    @NonNull
+    Operation deleteOperation;
 
     @Override
     public int execute(ConsoleWrapper console) {
@@ -31,6 +32,7 @@ public class FacadeOperation implements Operation {
                 break;
             case "d":
             case "delete":
+                deleteOperation.execute(console);
                 break;
             case "a":
             case "all":

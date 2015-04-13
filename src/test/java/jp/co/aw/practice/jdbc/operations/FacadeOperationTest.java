@@ -21,9 +21,11 @@ public class FacadeOperationTest {
     public void setUp() throws Exception {
         EmployeeService employeeService = new EmployeeService();
         InsertOperation insertOperation = InsertOperation.builder().employeeService(employeeService).build();
+        DeleteOperation deleteOperation = DeleteOperation.builder().employeeService(employeeService).build();
         operation = FacadeOperation.builder()//
                 .employeeService(employeeService)//
                 .insertOperation(insertOperation)//
+                .deleteOperation(deleteOperation)//
                 .build();
         connection = ConnectionUtils.checkoutConnection();
         connection.setAutoCommit(true);
@@ -37,12 +39,17 @@ public class FacadeOperationTest {
 
     @Test(expected = NullPointerException.class)
     public void constractor_employeeServiceがnull() {
-        new FacadeOperation(null, c -> 0);
+        new FacadeOperation(null, c -> 0, c -> 0);
     }
 
     @Test(expected = NullPointerException.class)
     public void constractor_insertOperationがnull() {
-        new FacadeOperation(new EmployeeService(), null);
+        new FacadeOperation(new EmployeeService(), null, c -> 0);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void constractor_deleteOperationがnull() {
+        new FacadeOperation(new EmployeeService(), c -> 0, null);
     }
 
     @Test(expected = NullPointerException.class)
