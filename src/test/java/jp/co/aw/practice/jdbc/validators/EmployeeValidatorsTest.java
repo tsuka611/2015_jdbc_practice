@@ -13,11 +13,12 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Strings;
 
 public class EmployeeValidatorsTest {
 
@@ -69,7 +70,8 @@ public class EmployeeValidatorsTest {
     @Test
     public void validName_通常() {
         List<String> successFormat = Arrays.asList(//
-                "hello");
+                "hello",//
+                Strings.repeat("あ", 300));
         for (String value : successFormat) {
             AtomicLong failCount = new AtomicLong();
             assertThat(String.format("check [%s] failed.", value), validate(value, s -> {
@@ -90,19 +92,6 @@ public class EmployeeValidatorsTest {
             }, validName()), is(false));
             assertThat(failCount.get(), is(1L));
         }
-        {
-            AtomicLong failCount = new AtomicLong();
-            StringBuilder sb = new StringBuilder();
-            IntStream.range(0, 300).forEach(i -> {
-                sb.append("あ");
-            });
-            String value = sb.toString();
-            assertThat(validate(value, s -> {
-                failCount.addAndGet(1L);
-                fail("This case should not fail.");
-            }, validName()), is(true));
-            assertThat(failCount.get(), is(0L));
-        }
     }
 
     @Test
@@ -113,7 +102,8 @@ public class EmployeeValidatorsTest {
                 "mail@example.com", //
                 "mail__mail@example.com", //
                 "mail--mail@example.com", //
-                "mail+m@example.com");
+                "mail+m@example.com",//
+                Strings.repeat("a", 300) + "@example.com");
         for (String value : successFormat) {
             AtomicLong failCount = new AtomicLong();
             assertThat(String.format("check [%s] failed.", value), validate(value, s -> {
@@ -138,20 +128,6 @@ public class EmployeeValidatorsTest {
             }, validMail()), is(false));
             assertThat(failCount.get(), is(1L));
         }
-
-        {
-            AtomicLong failCount = new AtomicLong();
-            StringBuilder sb = new StringBuilder();
-            IntStream.range(0, 300).forEach(i -> {
-                sb.append("a");
-            });
-            String value = sb.append("@example.com").toString();
-            assertThat(validate(value, s -> {
-                failCount.addAndGet(1L);
-                fail("This case should not fail.");
-            }, validMail()), is(true));
-            assertThat(failCount.get(), is(0L));
-        }
     }
 
     @Test
@@ -162,7 +138,8 @@ public class EmployeeValidatorsTest {
                 "",//
                 "123", //
                 "123-123", //
-                "123-123-123");
+                "123-123-123",//
+                Strings.repeat("1", 300));
         for (String value : successFormat) {
             AtomicLong failCount = new AtomicLong();
             assertThat(String.format("check [%s] failed.", value), validate(value, s -> {
@@ -188,19 +165,5 @@ public class EmployeeValidatorsTest {
             }, validTel()), is(false));
             assertThat(failCount.get(), is(1L));
         }
-        {
-            AtomicLong failCount = new AtomicLong();
-            StringBuilder sb = new StringBuilder();
-            IntStream.range(0, 300).forEach(i -> {
-                sb.append("1");
-            });
-            String value = sb.toString();
-            assertThat(validate(value, s -> {
-                failCount.addAndGet(1L);
-                fail("This case should not fail.");
-            }, validTel()), is(true));
-            assertThat(failCount.get(), is(0L));
-        }
     }
-
 }
