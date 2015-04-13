@@ -59,7 +59,7 @@ public class ConnectionUtilsTest {
     }
 
     @Test(expected = ApplicationException.class)
-    public void checkoutConnection_不正なデータを取得しようとする() throws Exception {
+    public void checkoutConnection_不正なデータを取得しようとする() {
         ConnectionUtils.checkoutConnection("xx");
     }
 }

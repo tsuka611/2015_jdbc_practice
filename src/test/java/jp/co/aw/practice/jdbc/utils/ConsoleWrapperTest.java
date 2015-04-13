@@ -44,7 +44,7 @@ public class ConsoleWrapperTest {
 
     @SuppressWarnings("resource")
     @Test
-    public void readLine_noarg_通常() throws IOException {
+    public void readLine_noarg_通常() {
         String readLines = String.format("test01%ntest02%ntest03");
         StringReader r = new StringReader(readLines);
         StringWriter w = new StringWriter();
@@ -58,7 +58,7 @@ public class ConsoleWrapperTest {
 
     @SuppressWarnings("resource")
     @Test
-    public void readLine_withArg_通常() throws IOException {
+    public void readLine_withArg_通常() {
         String readLines = String.format("test01%ntest02%ntest03");
         StringReader r = new StringReader(readLines);
         StringWriter w = new StringWriter();
@@ -79,7 +79,7 @@ public class ConsoleWrapperTest {
 
     @SuppressWarnings("resource")
     @Test
-    public void println_通常() throws IOException {
+    public void println_通常() {
         StringReader r = new StringReader("");
         StringWriter w = new StringWriter();
         ConsoleWrapper c = new ConsoleWrapper(r, w);
@@ -130,7 +130,7 @@ public class ConsoleWrapperTest {
     }
 
     @Test
-    public void close_通常() throws IOException {
+    public void close_通常() {
         MockReader r = new MockReader("mock");
         MockWriter w = new MockWriter();
 
@@ -142,7 +142,7 @@ public class ConsoleWrapperTest {
     }
 
     @Test
-    public void close_例外が発生するケース() throws IOException {
+    public void close_例外が発生するケース() {
         MockReader r = new MockReader("mock");
         r.setThrowException(true);
         MockWriter w = new MockWriter();

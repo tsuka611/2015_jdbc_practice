@@ -1,6 +1,6 @@
 package jp.co.aw.practice.jdbc.entity;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +24,7 @@ public class Employee {
 
     String tel;
 
-    Timestamp updateDate;
+    ZonedDateTime updateDate;
 
     @NonNull
     Boolean isDeleted;

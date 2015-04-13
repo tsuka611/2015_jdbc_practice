@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 
 import com.google.common.io.Closer;
@@ -23,30 +24,42 @@ public class ConsoleWrapper implements Closeable, AutoCloseable {
         this.writer = new BufferedWriter(writer);
     }
 
-    public String readLine() throws IOException {
-        return reader.readLine();
+    public String readLine() {
+        try {
+            return reader.readLine();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
-    public String readLine(String fmt, Object... args) throws IOException {
-        writer.write(String.format(fmt, args));
-        writer.flush();
+    public String readLine(String fmt, Object... args) {
+        try {
+            writer.write(String.format(fmt, args));
+            writer.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         return readLine();
     }
 
-    public void println(String fmt, Object... args) throws IOException {
-        writer.write(String.format(fmt, args));
-        writer.newLine();
-        writer.flush();
+    public void println(String fmt, Object... args) {
+        try {
+            writer.write(String.format(fmt, args));
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         Closer c = Closer.create();
         try {
             c.register(reader);
             c.register(writer);
         } finally {
-            c.close();
+            CloseUtils.closeQuietly(c);
         }
     }
 }

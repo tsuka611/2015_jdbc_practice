@@ -7,7 +7,8 @@ import static org.junit.Assert.assertThat;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,19 +29,16 @@ public class UnitTestUtils {
         }
     }
 
-    public static void assertTimestamp(Date ts, Date ts2) {
-        if (ts2 == null) {
-            assertThat(ts, is(nullValue()));
-            return;
-        }
-        assertThat(ts, is(notNullValue()));
-        assertThat(String.format(String.format("Expected [%s] but was [%s]", ts2, ts)), ts.getTime(), is(ts2.getTime()));
+    public static void assertZonedDateTime(ZonedDateTime actual, ZonedDateTime expected) {
+        assertInstant(actual == null ? null : actual.toInstant(), expected == null ? null : expected.toInstant());
     }
 
-    public static void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
+    public static void assertInstant(Instant actual, Instant expected) {
+        if (expected == null) {
+            assertThat(actual, is(nullValue()));
+            return;
         }
+        assertThat(actual, is(notNullValue()));
+        assertThat(String.format(String.format("Expected [%s] but was [%s]", expected, actual)), actual.getEpochSecond(), is(expected.getEpochSecond()));
     }
 }

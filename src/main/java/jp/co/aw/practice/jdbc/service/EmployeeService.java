@@ -6,6 +6,8 @@ import static jp.co.aw.practice.jdbc.utils.AutocloseableWrapper.wrap;
 import static jp.co.aw.practice.jdbc.utils.CloseUtils.closeQuietly;
 import static jp.co.aw.practice.jdbc.utils.CloseUtils.rethrow;
 import static jp.co.aw.practice.jdbc.utils.DateUtils.now;
+import static jp.co.aw.practice.jdbc.utils.DateUtils.ts;
+import static jp.co.aw.practice.jdbc.utils.DateUtils.z;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,8 +38,8 @@ public class EmployeeService {
 
     static Employee buildObject(ResultSet rs) throws SQLException {
         Employee.Builder builder = Employee.builder();
-        builder.id(rs.getLong("id")).name(rs.getString("name")).mail(rs.getString("mail")).tel(rs.getString("tel")).updateDate(rs.getTimestamp("update_date"))
-                .isDeleted(rs.getBoolean("is_deleted"));
+        builder.id(rs.getLong("id")).name(rs.getString("name")).mail(rs.getString("mail")).tel(rs.getString("tel"))
+                .updateDate(z(rs.getTimestamp("update_date"))).isDeleted(rs.getBoolean("is_deleted"));
         return builder.build();
     }
 
@@ -129,7 +131,7 @@ public class EmployeeService {
             ps.setString(++index, Strings.emptyToNull(name));
             ps.setString(++index, Strings.emptyToNull(mail));
             ps.setString(++index, Strings.emptyToNull(tel));
-            ps.setTimestamp(++index, now());
+            ps.setTimestamp(++index, ts(now()));
             ps.executeUpdate();
             ResultSet rs = closer.register(wrap(ps.getGeneratedKeys())).getCloseable();
             rs.next();
@@ -161,7 +163,7 @@ public class EmployeeService {
             ps.setString(++index, Strings.emptyToNull(name));
             ps.setString(++index, Strings.emptyToNull(mail));
             ps.setString(++index, Strings.emptyToNull(tel));
-            ps.setTimestamp(++index, now());
+            ps.setTimestamp(++index, ts(now()));
             ps.setLong(++index, id);
             int count = ps.executeUpdate();
             c.commit();
@@ -186,7 +188,7 @@ public class EmployeeService {
             Connection c = closer.register(wrap(checkoutConnection())).getCloseable();
             PreparedStatement ps = closer.register(wrap(c.prepareStatement(sql.toString()))).getCloseable();
             int index = 0;
-            ps.setTimestamp(++index, now());
+            ps.setTimestamp(++index, ts(now()));
             ps.setLong(++index, id);
             int count = ps.executeUpdate();
             c.commit();

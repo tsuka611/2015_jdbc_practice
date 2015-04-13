@@ -6,7 +6,7 @@ import static jp.co.aw.practice.jdbc.utils.CloseUtils.closeQuietly;
 import static jp.co.aw.practice.jdbc.utils.CloseUtils.rethrow;
 import static jp.co.aw.practice.jdbc.utils.DateUtils.parse;
 import static jp.co.aw.practice.jdbc.utils.DateUtils.ts;
-import static jp.co.aw.practice.jdbc.utils.UnitTestUtils.assertTimestamp;
+import static jp.co.aw.practice.jdbc.utils.UnitTestUtils.assertZonedDateTime;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -18,8 +18,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import jp.co.aw.practice.jdbc.dbcp.ConnectionUtils;
@@ -70,7 +70,7 @@ public class EmployeeServiceTest {
         }
     }
 
-    long insert(String name, String mail, String tel, Date updateDate, boolean isDeleted) throws Exception {
+    long insert(String name, String mail, String tel, ZonedDateTime updateDate, boolean isDeleted) throws Exception {
         Closer c = Closer.create();
         try {
             PreparedStatement ps = c.register(
@@ -143,7 +143,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("太郎"));
             assertThat(e.getMail(), is("taro@mail.com"));
             assertThat(e.getTel(), is("001-1234"));
-            assertTimestamp(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
+            assertZonedDateTime(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
 
         } catch (Exception e) {
@@ -171,7 +171,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("太郎"));
             assertThat(e.getMail(), is(nullValue()));
             assertThat(e.getTel(), is(nullValue()));
-            assertTimestamp(e.getUpdateDate(), null);
+            assertZonedDateTime(e.getUpdateDate(), null);
             assertThat(e.getIsDeleted(), is(true));
 
         } catch (Exception e) {
@@ -191,7 +191,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("太郎"));
             assertThat(e.getMail(), is("taro@mail.com"));
             assertThat(e.getTel(), is("001-1234"));
-            assertTimestamp(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
+            assertZonedDateTime(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
         {
@@ -200,7 +200,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("二郎"));
             assertThat(e.getMail(), is("jiro@mail.com"));
             assertThat(e.getTel(), is("002-1234"));
-            assertTimestamp(e.getUpdateDate(), parse("2015/04/02 01:02:03"));
+            assertZonedDateTime(e.getUpdateDate(), parse("2015/04/02 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
         {
@@ -209,7 +209,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("しろう"));
             assertThat(e.getMail(), is("siro@mail.com"));
             assertThat(e.getTel(), is("004-1234"));
-            assertTimestamp(e.getUpdateDate(), parse("2015/04/04 01:02:03"));
+            assertZonedDateTime(e.getUpdateDate(), parse("2015/04/04 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
     }
@@ -236,7 +236,7 @@ public class EmployeeServiceTest {
         assertThat(ret.getName(), is("太郎"));
         assertThat(ret.getMail(), is("taro@mail.com"));
         assertThat(ret.getTel(), is("001-1234"));
-        assertTimestamp(ret.getUpdateDate(), parse("2015/04/01 01:02:03"));
+        assertZonedDateTime(ret.getUpdateDate(), parse("2015/04/01 01:02:03"));
         assertThat(ret.getIsDeleted(), is(false));
     }
 
@@ -272,7 +272,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("太郎"));
             assertThat(e.getMail(), is("taro@mail.com"));
             assertThat(e.getTel(), is("001-1234"));
-            assertTimestamp(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
+            assertZonedDateTime(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
         {
@@ -281,7 +281,7 @@ public class EmployeeServiceTest {
             assertThat(e.getName(), is("二郎"));
             assertThat(e.getMail(), is("jiro@mail.com"));
             assertThat(e.getTel(), is("002-1234"));
-            assertTimestamp(e.getUpdateDate(), parse("2015/04/02 01:02:03"));
+            assertZonedDateTime(e.getUpdateDate(), parse("2015/04/02 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
         }
     }
@@ -366,7 +366,7 @@ public class EmployeeServiceTest {
         assertThat(db.getMail(), is("test-mail2@example.com"));
         assertThat(db.getTel(), is("111-1234"));
         assertThat(db.getUpdateDate(), is(notNullValue()));
-        assertThat(db.getUpdateDate().getTime(), is(not(parse("2015/04/11 01:02:03").getTime())));
+        assertThat(db.getUpdateDate().toEpochSecond(), is(not(parse("2015/04/11 01:02:03").toEpochSecond())));
         assertThat(db.getIsDeleted(), is(false));
     }
 
@@ -393,7 +393,7 @@ public class EmployeeServiceTest {
         assertThat(db.getMail(), is(nullValue()));
         assertThat(db.getTel(), is(nullValue()));
         assertThat(db.getUpdateDate(), is(notNullValue()));
-        assertThat(db.getUpdateDate().getTime(), is(not(parse("2015/04/11 01:02:03").getTime())));
+        assertThat(db.getUpdateDate().toEpochSecond(), is(not(parse("2015/04/11 01:02:03").toEpochSecond())));
         assertThat(db.getIsDeleted(), is(false));
     }
 
@@ -408,7 +408,7 @@ public class EmployeeServiceTest {
         assertThat(db.getMail(), is(nullValue()));
         assertThat(db.getTel(), is(nullValue()));
         assertThat(db.getUpdateDate(), is(notNullValue()));
-        assertThat(db.getUpdateDate().getTime(), is(not(parse("2015/04/11 01:02:03").getTime())));
+        assertThat(db.getUpdateDate().toEpochSecond(), is(not(parse("2015/04/11 01:02:03").toEpochSecond())));
         assertThat(db.getIsDeleted(), is(false));
     }
 
@@ -422,7 +422,7 @@ public class EmployeeServiceTest {
         assertThat(db.getName(), is("テスト太郎"));
         assertThat(db.getMail(), is("test-mail@example.com"));
         assertThat(db.getTel(), is("999-1234"));
-        assertTimestamp(db.getUpdateDate(), parse("2015/04/11 01:02:03"));
+        assertZonedDateTime(db.getUpdateDate(), parse("2015/04/11 01:02:03"));
         assertThat(db.getIsDeleted(), is(true));
     }
 
@@ -444,7 +444,7 @@ public class EmployeeServiceTest {
         assertThat(db.getMail(), is("test-mail@example.com"));
         assertThat(db.getTel(), is("999-1234"));
         assertThat(db.getUpdateDate(), is(notNullValue()));
-        assertThat(db.getUpdateDate().getTime(), is(not(parse("2015/04/11 01:02:03").getTime())));
+        assertThat(db.getUpdateDate().toEpochSecond(), is(not(parse("2015/04/11 01:02:03").toEpochSecond())));
         assertThat(db.getIsDeleted(), is(true));
     }
 
@@ -458,7 +458,7 @@ public class EmployeeServiceTest {
         assertThat(db.getName(), is("テスト太郎"));
         assertThat(db.getMail(), is("test-mail@example.com"));
         assertThat(db.getTel(), is("999-1234"));
-        assertTimestamp(db.getUpdateDate(), parse("2015/04/11 01:02:03"));
+        assertZonedDateTime(db.getUpdateDate(), parse("2015/04/11 01:02:03"));
         assertThat(db.getIsDeleted(), is(true));
     }
 }

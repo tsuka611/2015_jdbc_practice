@@ -1,36 +1,59 @@
 package jp.co.aw.practice.jdbc.utils;
 
-import static jp.co.aw.practice.jdbc.utils.UnitTestUtils.assertTimestamp;
+import static jp.co.aw.practice.jdbc.utils.DateUtils.defaultZoneId;
+import static jp.co.aw.practice.jdbc.utils.DateUtils.ts;
+import static jp.co.aw.practice.jdbc.utils.DateUtils.z;
+import static jp.co.aw.practice.jdbc.utils.UnitTestUtils.assertInstant;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
-
-import jp.co.aw.practice.jdbc.ApplicationException;
 
 import org.junit.Test;
 
 public class DateUtilsTest {
 
     @Test
+    public void defaultZoneId_通常() {
+        assertThat(defaultZoneId(), is(notNullValue()));
+        assertThat(defaultZoneId(), is(ZoneId.of("Asia/Tokyo")));
+    }
+
+    @Test
     public void now_通常() {
-        Timestamp ts = DateUtils.now();
-        assertThat(ts, is(notNullValue()));
+        ZonedDateTime z = DateUtils.now();
+        assertThat(z, is(notNullValue()));
     }
 
     @Test
     public void ts_通常() {
         {
-            Date d = new Date();
-            assertTimestamp(DateUtils.ts(d), d);
+            ZonedDateTime z = ZonedDateTime.now();
+            Timestamp ret = ts(z);
+            assertInstant(ret.toInstant(), z.toInstant());
         }
         {
-            Timestamp ts = new Timestamp(new Date().getTime());
-            assertTimestamp(DateUtils.ts(ts), ts);
+            assertThat(ts(null), is(nullValue()));
+        }
+    }
+
+    @Test
+    public void z_通常() throws Exception {
+        {
+            Date d = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse("2015/01/02 11:22:33");
+            ZonedDateTime ret = z(d);
+            assertInstant(ret.toInstant(), d.toInstant());
+        }
+        {
+            assertThat(z(null), is(nullValue()));
         }
     }
 
@@ -44,21 +67,21 @@ public class DateUtilsTest {
         DateUtils.parse("");
     }
 
-    @Test(expected = ApplicationException.class)
+    @Test(expected = DateTimeParseException.class)
     public void parse_フォーマット不正() {
         DateUtils.parse("xxx");
     }
 
     @Test
     public void parse_通常() throws ParseException {
-        Timestamp ret = DateUtils.parse("2015/01/02 11:22:33");
-        assertTimestamp(ret, new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse("2015/01/02 11:22:33"));
+        ZonedDateTime ret = DateUtils.parse("2015/01/02 11:22:33");
+        assertInstant(ret.toInstant(), new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse("2015/01/02 11:22:33").toInstant());
     }
 
     @Test
     public void format_通常() throws ParseException {
         Date d = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse("2015/01/02 11:22:33");
-        String ret = DateUtils.format(d);
+        String ret = DateUtils.format(d.toInstant().atZone(defaultZoneId()));
         assertThat(ret, is("2015/01/02 11:22:33"));
     }
 

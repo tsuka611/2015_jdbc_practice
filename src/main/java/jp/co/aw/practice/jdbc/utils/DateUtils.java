@@ -4,43 +4,42 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.util.Date;
-
-import jp.co.aw.practice.jdbc.ApplicationException;
 
 import com.google.common.base.Strings;
 
 public class DateUtils {
 
-    public static final String FORMAT = "yyyy/MM/dd HH:mm:ss";
+    public static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
 
-    public static Timestamp now() {
-        return ts(new Date());
+    public static ZoneId defaultZoneId() {
+        return ZoneId.of("Asia/Tokyo");
     }
 
-    public static Timestamp ts(Date d) {
-        if (d == null) {
-            return null;
-        }
-        if (d instanceof Timestamp) {
-            return (Timestamp) d;
-        }
-        return new Timestamp(d.getTime());
+    public static ZonedDateTime now() {
+        return ZonedDateTime.now(defaultZoneId());
     }
 
-    public static Timestamp parse(String s) {
+    public static Timestamp ts(ZonedDateTime z) {
+        return z == null ? null : Timestamp.from(z.toInstant());
+    }
+
+    public static ZonedDateTime z(Date d) {
+        return d == null ? null : d.toInstant().atZone(defaultZoneId());
+    }
+
+    public static ZonedDateTime parse(String s) {
         checkArgument(!Strings.isNullOrEmpty(s));
-        try {
-            return ts(new SimpleDateFormat(FORMAT).parse(s));
-        } catch (ParseException e) {
-            throw new ApplicationException(e);
-        }
+        return LocalDateTime.parse(s, DEFAULT_FORMATTER).atZone(defaultZoneId());
     }
 
-    public static String format(Date d) {
-        checkNotNull(d);
-        return new SimpleDateFormat(FORMAT).format(d);
+    public static String format(ZonedDateTime z) {
+        checkNotNull(z);
+        return z.format(DEFAULT_FORMATTER);
     }
 }
