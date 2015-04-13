@@ -56,7 +56,7 @@ public class EmployeeServiceTest {
         CloseUtils.autocloseQuietly(connection);
     }
 
-    public static long insert(Connection c, String name, String mail, String tel, ZonedDateTime updateDate, boolean isDeleted) throws Exception {
+    public static long insert(Connection c, String name, String mail, String tel, ZonedDateTime updateDate, boolean isDeleted) {
         Closer closer = Closer.create();
         try {
             PreparedStatement ps = closer.register(
@@ -75,9 +75,9 @@ public class EmployeeServiceTest {
             rs.next();
             return rs.getLong(1);
         } catch (Exception e) {
-            throw closer.rethrow(e);
+            throw rethrow(closer, e);
         } finally {
-            closer.close();
+            closeQuietly(closer);
         }
     }
 
@@ -111,7 +111,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void buildObject_通常() throws Exception {
+    public void buildObject_通常() {
         deleteTables(connection, EmployeeService.tableName());
         long id = insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
 
@@ -130,16 +130,15 @@ public class EmployeeServiceTest {
             assertThat(e.getTel(), is("001-1234"));
             assertZonedDateTime(e.getUpdateDate(), parse("2015/04/01 01:02:03"));
             assertThat(e.getIsDeleted(), is(false));
-
-        } catch (Exception e) {
-            throw c.rethrow(e);
+        } catch (SQLException e) {
+            throw rethrow(c, e);
         } finally {
-            c.close();
+            closeQuietly(c);
         }
     }
 
     @Test
-    public void buildObject_nullを含む削除オブジェクト() throws Exception {
+    public void buildObject_nullを含む削除オブジェクト() {
         deleteTables(connection, EmployeeService.tableName());
         long id = insert(connection, "太郎", null, null, null, true);
 
@@ -160,14 +159,14 @@ public class EmployeeServiceTest {
             assertThat(e.getIsDeleted(), is(true));
 
         } catch (Exception e) {
-            throw c.rethrow(e);
+            throw rethrow(c, e);
         } finally {
-            c.close();
+            closeQuietly(c);
         }
     }
 
     @Test
-    public void findAll_通常() throws Exception {
+    public void findAll_通常() {
         List<Employee> ret = service.findAll();
         assertThat(ret.size(), is(3));
         {
@@ -200,21 +199,21 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void findById_値が取得できない() throws Exception {
+    public void findById_値が取得できない() {
         long id = insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
         Employee ret = service.findById(id + 999L);
         assertThat(ret, is(nullValue()));
     }
 
     @Test
-    public void findById_削除されたレコードが取得されない() throws Exception {
+    public void findById_削除されたレコードが取得されない() {
         long id = insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), true);
         Employee ret = service.findById(id);
         assertThat(ret, is(nullValue()));
     }
 
     @Test
-    public void findById_通常() throws Exception {
+    public void findById_通常() {
         long id = insert(connection, "太郎", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
         Employee ret = service.findById(id);
         assertThat(ret.getId(), is(id));
@@ -226,29 +225,29 @@ public class EmployeeServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void findLikeName_引数がnull() throws Exception {
+    public void findLikeName_引数がnull() {
         service.findLikeName(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void findLikeName_引数が空() throws Exception {
+    public void findLikeName_引数が空() {
         service.findLikeName("");
     }
 
     @Test
-    public void findLikeName_結果が空() throws Exception {
+    public void findLikeName_結果が空() {
         List<Employee> ret = service.findLikeName("たろう");
         assertThat(ret.size(), is(0));
     }
 
     @Test
-    public void findLikeName_削除レコードが取得されない() throws Exception {
+    public void findLikeName_削除レコードが取得されない() {
         List<Employee> ret = service.findLikeName("さぶ");
         assertThat(ret.size(), is(0));
     }
 
     @Test
-    public void findLikeName_通常() throws Exception {
+    public void findLikeName_通常() {
         List<Employee> ret = service.findLikeName("郎");
         assertThat(ret.size(), is(2));
         {
@@ -272,7 +271,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void findLikeName_エスケープ文字で正しく値が取得される() throws Exception {
+    public void findLikeName_エスケープ文字で正しく値が取得される() {
         insert(connection, "%%%", "taro@mail.com", "001-1234", parse("2015/04/01 01:02:03"), false);
         insert(connection, "___", "jiro@mail.com", "002-1234", parse("2015/04/02 01:02:03"), false);
         insert(connection, "$$$", "sabu@mail.com", "003-1234", parse("2015/04/03 01:02:03"), false);
@@ -341,7 +340,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void update_通常() throws Exception {
+    public void update_通常() {
         long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         int ret = service.update(id, "テスト太郎2", "test-mail2@example.com", "111-1234");
         assertThat(ret, is(1));
@@ -356,19 +355,19 @@ public class EmployeeServiceTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void update_nameがnull() throws Exception {
+    public void update_nameがnull() {
         long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         service.update(id, null, "test-mail2@example.com", "111-1234");
     }
 
     @Test(expected = RuntimeException.class)
-    public void update_nameが空() throws Exception {
+    public void update_nameが空() {
         long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         service.update(id, "", "test-mail2@example.com", "111-1234");
     }
 
     @Test
-    public void update_mailとtelがnull() throws Exception {
+    public void update_mailとtelがnull() {
         long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         int ret = service.update(id, "テスト太郎2", null, null);
         assertThat(ret, is(1));
@@ -383,7 +382,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void update_mailとtelが空() throws Exception {
+    public void update_mailとtelが空() {
         long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         int ret = service.update(id, "テスト太郎2", "", "");
         assertThat(ret, is(1));
@@ -398,7 +397,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void update_削除レコードは更新されない() throws Exception {
+    public void update_削除レコードは更新されない() {
         long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), true);
         int ret = service.update(id, "テスト太郎2", "test-mail2@example.com", "111-1234");
         assertThat(ret, is(0));
@@ -412,14 +411,14 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void update_対象レコードがない場合() throws Exception {
+    public void update_対象レコードがない場合() {
         deleteTables(connection, EmployeeService.tableName());
         int ret = service.update(1L, "テスト太郎2", "test-mail2@example.com", "111-1234");
         assertThat(ret, is(0));
     }
 
     @Test
-    public void delete_通常() throws Exception {
+    public void delete_通常() {
         long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), false);
         int ret = service.delete(id);
         assertThat(ret, is(1));
@@ -434,7 +433,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void delete_削除済みレコードは更新されない() throws Exception {
+    public void delete_削除済みレコードは更新されない() {
         long id = insert(connection, "テスト太郎", "test-mail@example.com", "999-1234", parse("2015/04/11 01:02:03"), true);
         int ret = service.delete(id);
         assertThat(ret, is(0));
