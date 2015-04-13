@@ -5,12 +5,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.Setter;
+import jp.co.aw.practice.jdbc.utils.UnitTestUtils.MockCloseable;
 
 import org.junit.After;
 import org.junit.Before;
@@ -19,20 +17,6 @@ import org.junit.Test;
 import com.google.common.io.Closer;
 
 public class CloseUtilsTest {
-    static class MockCloseable implements Closeable {
-        @Setter
-        boolean throwException = false;
-        @Getter
-        int callCount = 0;
-
-        @Override
-        public void close() throws IOException {
-            callCount++;
-            if (throwException) {
-                throw new IOException("Dummy Exception.");
-            }
-        }
-    }
 
     @Before
     public void setUp() {
@@ -64,6 +48,30 @@ public class CloseUtilsTest {
     public void closeQuietly_引数がnullもしくは空でエラーにならない() {
         CloseUtils.closeQuietly();
         CloseUtils.closeQuietly((Closeable[]) null);
+    }
+
+    @Test
+    public void autocloseQuietly_通常() {
+        List<MockCloseable> cs = new LinkedList<>();
+        cs.add(new MockCloseable());
+        cs.add(new MockCloseable());
+        cs.add(null);
+        cs.add(new MockCloseable());
+
+        cs.get(1).setThrowException(true);
+
+        CloseUtils.autocloseQuietly(cs.toArray(new AutoCloseable[0]));
+
+        assertThat(cs.get(0).getCallCount(), is(1));
+        assertThat(cs.get(1).getCallCount(), is(1));
+        assertThat(cs.get(2), is(nullValue()));
+        assertThat(cs.get(3).getCallCount(), is(1));
+    }
+
+    @Test
+    public void autocloseQuietly_引数がnullもしくは空でエラーにならない() {
+        CloseUtils.autocloseQuietly();
+        CloseUtils.autocloseQuietly((AutoCloseable[]) null);
     }
 
     @Test(expected = NullPointerException.class)

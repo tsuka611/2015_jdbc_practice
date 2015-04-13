@@ -58,5 +58,4 @@ public class ValidationUtilsTest {
         assertThat(ValidationUtils.validate("", null, isNotEmpty), is(false));
         assertThat(ValidationUtils.validate("xxx", null, isNotEmpty), is(true));
     }
-
 }

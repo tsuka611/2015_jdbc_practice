@@ -7,9 +7,7 @@ import com.google.common.base.Strings;
 public class EmployeeValidators {
 
     public static Predicate<String> required() {
-        return s -> {
-            return !Strings.isNullOrEmpty(s);
-        };
+        return s -> !Strings.isNullOrEmpty(s);
     }
 
     @SuppressWarnings("unchecked")
@@ -19,17 +17,13 @@ public class EmployeeValidators {
 
     @SuppressWarnings("unchecked")
     public static Predicate<String>[] validMail() {
-        Predicate<String> mailCheck = s -> {
-            return Strings.isNullOrEmpty(s) || s.matches("[\\w\\.\\-\\+]+@(?:[\\w\\-]+\\.)+[\\w\\-]+");
-        };
+        Predicate<String> mailCheck = s -> Strings.isNullOrEmpty(s) || s.matches("[\\w\\.\\-\\+]+@(?:[\\w\\-]+\\.)+[\\w\\-]+");
         return new Predicate[] { mailCheck };
     }
 
     @SuppressWarnings("unchecked")
     public static Predicate<String>[] validTel() {
-        Predicate<String> mailCheck = s -> {
-            return Strings.isNullOrEmpty(s) || s.matches("\\d+(?:\\-[\\d]+)*");
-        };
+        Predicate<String> mailCheck = s -> Strings.isNullOrEmpty(s) || s.matches("\\d+(?:\\-[\\d]+)*");
         return new Predicate[] { mailCheck };
     }
 }

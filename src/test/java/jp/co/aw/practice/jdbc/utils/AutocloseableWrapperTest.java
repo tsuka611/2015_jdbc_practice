@@ -4,33 +4,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
-
-import java.io.Closeable;
-import java.io.IOException;
-
-import lombok.Getter;
-import lombok.Setter;
+import jp.co.aw.practice.jdbc.utils.UnitTestUtils.MockCloseable;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class AutocloseableWrapperTest {
-
-    static class MockCloseable implements Closeable {
-        @Setter
-        boolean throwException = false;
-        @Getter
-        int callCount = 0;
-
-        @Override
-        public void close() throws IOException {
-            callCount++;
-            if (throwException) {
-                throw new IOException("Dummy Exception.");
-            }
-        }
-    }
 
     @Before
     public void setUp() {

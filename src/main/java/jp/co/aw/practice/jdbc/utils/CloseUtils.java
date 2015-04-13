@@ -26,6 +26,21 @@ public class CloseUtils {
         }
     }
 
+    public static void autocloseQuietly(AutoCloseable... autocloseables) {
+        if (autocloseables == null || autocloseables.length < 1) {
+            return;
+        }
+        for (AutoCloseable c : autocloseables) {
+            if (c == null) {
+                continue;
+            }
+            try {
+                c.close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
     public static <E extends RuntimeException> RuntimeException rethrow(Closer closer, Throwable cause) throws E {
         try {
             return checkNotNull(closer).rethrow(checkNotNull(cause));

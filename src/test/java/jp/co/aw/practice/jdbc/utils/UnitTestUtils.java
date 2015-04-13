@@ -5,9 +5,29 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Date;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class UnitTestUtils {
+    public static class MockCloseable implements Closeable, AutoCloseable {
+        @Setter
+        boolean throwException = false;
+        @Getter
+        int callCount = 0;
+
+        @Override
+        public void close() throws IOException {
+            callCount++;
+            if (throwException) {
+                throw new IOException("Dummy Exception.");
+            }
+        }
+    }
+
     public static void assertTimestamp(Date ts, Date ts2) {
         if (ts2 == null) {
             assertThat(ts, is(nullValue()));

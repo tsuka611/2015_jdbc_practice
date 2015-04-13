@@ -28,9 +28,4 @@ public class Employee {
 
     @NonNull
     Boolean isDeleted;
-
-    public Boolean setIsDeleted(Byte b) {
-        isDeleted = b == null || b.byteValue() != 0;
-        return isDeleted;
-    }
 }

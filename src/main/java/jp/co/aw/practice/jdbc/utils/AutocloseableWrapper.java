@@ -20,12 +20,6 @@ public class AutocloseableWrapper<T extends AutoCloseable> implements Closeable 
 
     @Override
     public void close() {
-        if (closeable == null) {
-            return;
-        }
-        try {
-            closeable.close();
-        } catch (Exception ignore) {
-        }
+        CloseUtils.autocloseQuietly(closeable);
     }
 }
