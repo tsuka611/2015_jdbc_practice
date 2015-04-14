@@ -49,7 +49,9 @@ flyway {
 
 run.dependsOn flywayMigrate
 test.dependsOn flywayMigrate
-
+test {
+    testResultsDirName = "surefire-reports"
+}
 run {
     standardInput = System.in
 }
