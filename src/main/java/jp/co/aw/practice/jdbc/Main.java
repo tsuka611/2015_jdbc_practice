@@ -5,8 +5,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import jp.co.aw.practice.jdbc.operations.DeleteOperation;
 import jp.co.aw.practice.jdbc.operations.FacadeOperation;
 import jp.co.aw.practice.jdbc.operations.InsertOperation;
+import jp.co.aw.practice.jdbc.operations.SelectAllOperation;
 import jp.co.aw.practice.jdbc.service.EmployeeService;
 import jp.co.aw.practice.jdbc.utils.ConsoleWrapper;
 
@@ -24,9 +26,13 @@ public class Main {
             ConsoleWrapper cw = closer.register(new ConsoleWrapper(r, w));
             EmployeeService employeeService = new EmployeeService();
             InsertOperation insertOperation = InsertOperation.builder().employeeService(employeeService).build();
+            DeleteOperation deleteOperation = DeleteOperation.builder().employeeService(employeeService).build();
+            SelectAllOperation selectAllOperation = SelectAllOperation.builder().employeeService(employeeService).build();
             FacadeOperation exec = FacadeOperation.builder() //
                     .employeeService(employeeService) //
                     .insertOperation(insertOperation)//
+                    .deleteOperation(deleteOperation)//
+                    .selectAllOperation(selectAllOperation)//
                     .build();
             exec.execute(cw);
         } catch (Exception e) {

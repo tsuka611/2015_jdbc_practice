@@ -17,6 +17,8 @@ public class FacadeOperation implements Operation {
     Operation insertOperation;
     @NonNull
     Operation deleteOperation;
+    @NonNull
+    Operation selectAllOperation;
 
     @Override
     public int execute(ConsoleWrapper console) {
@@ -36,6 +38,7 @@ public class FacadeOperation implements Operation {
                 break;
             case "a":
             case "all":
+                selectAllOperation.execute(console);
                 break;
             case "s":
             case "select":
