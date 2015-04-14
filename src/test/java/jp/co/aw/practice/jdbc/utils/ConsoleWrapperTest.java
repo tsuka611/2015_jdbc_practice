@@ -1,5 +1,6 @@
 package jp.co.aw.practice.jdbc.utils;
 
+import static jp.co.aw.practice.jdbc.utils.UnitTestUtils.newline;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -86,8 +87,10 @@ public class ConsoleWrapperTest {
 
         c.println("hello");
         c.println("Test%02d", 1);
+        c.println("xxx", 1);
+        c.println("%s");
 
-        assertThat(w.getBuffer().toString(), is(String.format("hello%nTest01%n")));
+        assertThat(w.getBuffer().toString(), is("hello" + newline() + "Test01" + newline() + "xxx" + newline() + "%s" + newline()));
     }
 
     class MockReader extends StringReader {

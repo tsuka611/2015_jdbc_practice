@@ -42,6 +42,16 @@ public class ConsoleWrapper implements Closeable, AutoCloseable {
         return readLine();
     }
 
+    public void println(String string) {
+        try {
+            writer.write(string);
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     public void println(String fmt, Object... args) {
         try {
             writer.write(String.format(fmt, args));
