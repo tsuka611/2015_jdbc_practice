@@ -17,7 +17,7 @@ public class DeleteOperation implements Operation {
 
     @Override
     public int execute(ConsoleWrapper console) {
-        String id = console.readLine("削除したいIDを入力してください。%n");
+        String id = console.readLine("削除したいIDを入力してください。%n", "");
 
         boolean isValid = true;
         isValid &= validate(id, s -> console.println("[%s]はIDとして不適切です。", s), validId());
