@@ -105,11 +105,11 @@ public class SelectWhereOperationTest {
 
         insert(connection, "テスト三郎", "mail_sabu@example.com", null, parse("2015/04/12 11:22:33"), true);
 
-        long id04 = insert(connection, "てすと四郎", "mail_siro@example.com", null, parse("2015/04/13 11:22:33"), false);
+        long id04 = insert(connection, "てすとしろう", "mail_siro@example.com", null, parse("2015/04/13 11:22:33"), false);
         findById(connection, id04);
 
         StringBuilder input = new StringBuilder()//
-                .append("スト").append(newline());
+                .append("郎").append(newline());
         StringBuilder expected = new StringBuilder()//
                 .append("検索したい名前を入力してください").append(newline())//
                 .append(e01.toConsoleFormat()).append(newline())//
