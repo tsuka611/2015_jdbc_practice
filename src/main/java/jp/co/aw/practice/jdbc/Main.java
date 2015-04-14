@@ -29,7 +29,6 @@ public class Main {
             DeleteOperation deleteOperation = DeleteOperation.builder().employeeService(employeeService).build();
             SelectAllOperation selectAllOperation = SelectAllOperation.builder().employeeService(employeeService).build();
             FacadeOperation exec = FacadeOperation.builder() //
-                    .employeeService(employeeService) //
                     .insertOperation(insertOperation)//
                     .deleteOperation(deleteOperation)//
                     .selectAllOperation(selectAllOperation)//

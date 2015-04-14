@@ -1,7 +1,6 @@
 package jp.co.aw.practice.jdbc.operations;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import jp.co.aw.practice.jdbc.service.EmployeeService;
 import jp.co.aw.practice.jdbc.utils.ConsoleWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,13 +11,15 @@ import lombok.NonNull;
 public class FacadeOperation implements Operation {
 
     @NonNull
-    EmployeeService employeeService;
-    @NonNull
     Operation insertOperation;
     @NonNull
     Operation deleteOperation;
     @NonNull
     Operation selectAllOperation;
+    @NonNull
+    Operation selectWhereOperation;
+    @NonNull
+    Operation updateOperation;
 
     @Override
     public int execute(ConsoleWrapper console) {
@@ -26,8 +27,8 @@ public class FacadeOperation implements Operation {
         String readMess = "操作を選択してください。%n(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)%n";
 
         String line;
-        outer: while ((line = console.readLine(readMess)) != null) {
-            switch (line) {
+        outer: while ((line = console.readLine(readMess, "")) != null) {
+            switch (line.toLowerCase()) {
             case "i":
             case "insert":
                 insertOperation.execute(console);
@@ -42,9 +43,11 @@ public class FacadeOperation implements Operation {
                 break;
             case "s":
             case "select":
+                selectWhereOperation.execute(console);
                 break;
             case "u":
             case "update":
+                updateOperation.execute(console);
                 break;
             case "q":
             case "quit":
