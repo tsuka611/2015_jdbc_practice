@@ -68,13 +68,15 @@ public class ConsoleWrapperTest {
         assertThat(c.readLine("NoArg"), is("test01"));
         assertThat(c.readLine("WithStr[%s]", "str"), is("test02"));
         assertThat(c.readLine("WithInt[%d]", 999), is("test03"));
-        assertThat(c.readLine("newLine%nnewLine"), is(nullValue()));
+        assertThat(c.readLine("%s%s"), is(nullValue()));
+        assertThat(c.readLine("newLine%nnewLine", ""), is(nullValue()));
 
         StringBuilder expected = new StringBuilder() //
                 .append("NoArg")//
                 .append("WithStr[str]")//
                 .append("WithInt[999]")//
-                .append(String.format("newLine%nnewLine"));
+                .append("%s%s")//
+                .append("newLine" + newline() + "newLine");
         assertThat(w.getBuffer().toString(), is(expected.toString()));
     }
 
