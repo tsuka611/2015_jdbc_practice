@@ -8,7 +8,7 @@ machine:
     version: oraclejdk8
 test:
   override:
-    - ./gradlew -q -s test
+    - ./gradlew -s test
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/build/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
