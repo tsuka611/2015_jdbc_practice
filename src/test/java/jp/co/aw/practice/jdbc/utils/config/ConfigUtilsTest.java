@@ -1,11 +1,13 @@
 package jp.co.aw.practice.jdbc.utils.config;
 
+import static jp.co.aw.practice.jdbc.utils.config.ConfigUtils.dbPassword;
+import static jp.co.aw.practice.jdbc.utils.config.ConfigUtils.dbUrl;
+import static jp.co.aw.practice.jdbc.utils.config.ConfigUtils.dbUser;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -38,80 +40,68 @@ public class ConfigUtilsTest {
         assertThat(ret, is(expected));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void extract_取得結果がnull() {
         String key = "DB_URL";
         envMap.remove(key);
-        ConfigUtils.extract(key);
+        assertThat(ConfigUtils.extract(key), is(""));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void extract_取得結果が空() {
         String key = "DB_URL";
         envMap.put(key, "");
-        ConfigUtils.extract(key);
+        assertThat(ConfigUtils.extract(key), is(""));
     }
 
     @Test
     public void dbUrl_通常() {
-        String ret = ConfigUtils.dbUrl();
-        String expected = "test_db_url";
-        assertThat(ret, is(expected));
+        assertThat(dbUrl(), is("test_db_url"));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void dbUrl_取得結果がnull() {
-        String key = "DB_URL";
-        envMap.remove(key);
-        ConfigUtils.dbUrl();
+        envMap.remove("DB_URL");
+        assertThat(dbUrl(), is(""));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void dbUrl_取得結果が空() {
-        String key = "DB_URL";
-        envMap.put(key, "");
-        ConfigUtils.dbUrl();
+        envMap.put("DB_URL", "");
+        assertThat(dbUrl(), is(""));
     }
 
     @Test
     public void dbUser_通常() {
-        String ret = ConfigUtils.dbUser();
-        String expected = "test_db_user";
-        assertThat(ret, is(expected));
+        assertThat(dbUser(), is("test_db_user"));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void dbUser_取得結果がnull() {
-        String key = "DB_USER";
-        envMap.remove(key);
-        ConfigUtils.dbUser();
+        envMap.remove("DB_USER");
+        assertThat(dbUser(), is(""));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void dbUser_取得結果が空() {
-        String key = "DB_USER";
-        envMap.put(key, "");
-        ConfigUtils.dbUser();
+        envMap.put("DB_USER", "");
+        assertThat(dbUser(), is(""));
     }
 
     @Test
     public void dbPassword_通常() {
-        String ret = ConfigUtils.dbPassword();
-        String expected = "test_db_password";
-        assertThat(ret, is(expected));
+        assertThat(dbPassword(), is("test_db_password"));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void dbPassword_取得結果がnull() {
-        String key = "DB_PASSWORD";
-        envMap.remove(key);
-        ConfigUtils.dbPassword();
+        envMap.remove("DB_PASSWORD");
+        assertThat(dbPassword(), is(""));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void dbPassword_取得結果が空() {
-        String key = "DB_PASSWORD";
-        envMap.put(key, "");
-        ConfigUtils.dbPassword();
+        envMap.put("DB_PASSWORD", "");
+        assertThat(dbPassword(), is(""));
     }
 }

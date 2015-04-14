@@ -2,7 +2,6 @@ package jp.co.aw.practice.jdbc.utils.config;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -28,10 +27,7 @@ public class ConfigUtils {
     static String extract(String key) {
         String val = envMap.get(key);
         log.debug("Env value get key[{}], value[{}]", key, val);
-        if (Strings.isNullOrEmpty(val)) {
-            throw new NoSuchElementException(String.format("Env key[%s] is not found.", key));
-        }
-        return val;
+        return Strings.nullToEmpty(val);
     }
 
     public static String dbUrl() {
