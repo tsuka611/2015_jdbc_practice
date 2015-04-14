@@ -8,4 +8,4 @@ machine:
     version: oraclejdk8
 test:
   override:
-    - ./gradlew test
+    - ./gradlew -q -s test
