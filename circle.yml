@@ -10,3 +10,7 @@ test:
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/build/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+database:
+  override:
+    - echo "ALTER DATABASE circle_test CHARACTER SET utf8 COLLATE utf8_bin;" | mysql -u ubuntu circle_test
+    - ./gradlew flywayMigrate
