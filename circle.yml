@@ -1,0 +1,11 @@
+machine:
+  environment:
+    DB_URL: jdbc:mysql://localhost/circle_test
+    DB_USER: ubuntu
+    DB_PASSWORD: 
+  timezone: Asia/Tokyo
+  java:
+    version: oraclejdk8
+test:
+  override:
+    - ./gradlew test
