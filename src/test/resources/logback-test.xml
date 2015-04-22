@@ -1,13 +1,21 @@
 <configuration>
+  <property name="defaultPattern" value="%d{YYYY-MM-SS_HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    <target>System.out</target>
+    <encoder name="STD_ENCODER">
+      <pattern>${defaultPattern}</pattern>
     </encoder>
   </appender>
- 
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <target>System.err</target>
+    <encoder name="STD_ENCODER">
+      <pattern>${defaultPattern}</pattern>
+    </encoder>
+  </appender>
+
   <logger name="chapters.configuration" level="INFO"/>
  
   <root level="debug">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="STDERR" />
   </root>
 </configuration>

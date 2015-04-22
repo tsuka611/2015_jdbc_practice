@@ -34,7 +34,7 @@ public class ConnectionUtils {
     }
 
     public static void init() {
-        log.debug("Create ConnectionFactory by ConfigUtils value.");
+        log.debug("Start Create ConnectionFactory by ConfigUtils value.");
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(dbUrl(), dbUser(), dbPassword());
 
         log.debug("Create PoolableConnectionFactory.");
@@ -57,15 +57,18 @@ public class ConnectionUtils {
         }
         log.debug("Regist pool name for {}", POSTFIX_DRIVER_STRING);
         driver.registerPool(POSTFIX_DRIVER_STRING, connectionPool);
+
+        log.debug("Finish Create ConnectionFactory by ConfigUtils value.");
     }
 
     static Connection checkoutConnection(String url) {
         try {
+            log.debug("Checkout Connection for [{}].", url);
             Connection c = DriverManager.getConnection(url);
             c.setAutoCommit(false);
             return c;
         } catch (SQLException e) {
-            log.error("Get Connection from DriverManager failed.");
+            log.error("Get Connection from DriverManager failed.", e);
             throw new ApplicationException(e);
         }
     }
