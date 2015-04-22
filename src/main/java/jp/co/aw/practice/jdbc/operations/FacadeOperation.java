@@ -20,11 +20,13 @@ public class FacadeOperation implements Operation {
     Operation selectWhereOperation;
     @NonNull
     Operation updateOperation;
+    @NonNull
+    Operation selectIdOperation;
 
     @Override
     public int execute(ConsoleWrapper console) {
         checkNotNull(console);
-        String readMess = "操作を選択してください。%n(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)%n";
+        String readMess = "操作を選択してください。%n(i: insert / d: delete / a: select all / s: select where / u: update/ f: find/ q: exit)%n";
 
         String line;
         outer: while ((line = console.readLine(readMess, "")) != null) {
@@ -48,6 +50,10 @@ public class FacadeOperation implements Operation {
             case "u":
             case "update":
                 updateOperation.execute(console);
+                break;
+            case "f":
+            case "find":
+                selectIdOperation.execute(console);
                 break;
             case "q":
             case "quit":
