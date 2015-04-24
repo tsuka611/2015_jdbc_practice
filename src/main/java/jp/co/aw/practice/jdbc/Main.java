@@ -9,6 +9,7 @@ import jp.co.aw.practice.jdbc.operations.DeleteOperation;
 import jp.co.aw.practice.jdbc.operations.FacadeOperation;
 import jp.co.aw.practice.jdbc.operations.InsertOperation;
 import jp.co.aw.practice.jdbc.operations.SelectAllOperation;
+import jp.co.aw.practice.jdbc.operations.SelectIdOperation;
 import jp.co.aw.practice.jdbc.operations.SelectWhereOperation;
 import jp.co.aw.practice.jdbc.operations.UpdateOperation;
 import jp.co.aw.practice.jdbc.service.EmployeeService;
@@ -32,12 +33,14 @@ public class Main {
             SelectAllOperation selectAllOperation = SelectAllOperation.builder().employeeService(employeeService).build();
             SelectWhereOperation selectWhereOperation = SelectWhereOperation.builder().employeeService(employeeService).build();
             UpdateOperation updateOperation = UpdateOperation.builder().employeeService(employeeService).build();
+            SelectIdOperation selectIdOperation = SelectIdOperation.builder().employeeService(employeeService).build();
             FacadeOperation exec = FacadeOperation.builder() //
                     .insertOperation(insertOperation)//
                     .deleteOperation(deleteOperation)//
                     .selectAllOperation(selectAllOperation)//
                     .selectWhereOperation(selectWhereOperation)//
                     .updateOperation(updateOperation)//
+                    .selectIdOperation(selectIdOperation)//
                     .build();
             exec.execute(cw);
         } catch (Exception e) {

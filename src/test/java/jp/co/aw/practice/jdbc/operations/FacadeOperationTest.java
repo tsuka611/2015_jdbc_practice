@@ -44,12 +44,13 @@ public class FacadeOperationTest {
                 .selectAllOperation(failOperation)//
                 .selectWhereOperation(failOperation)//
                 .updateOperation(failOperation)//
+                .selectIdOperation(failOperation)//
                 .build();
         connection = ConnectionUtils.checkoutConnection();
         connection.setAutoCommit(true);
         deleteTables(connection, EmployeeService.tableName());
 
-        baseMess = String.format("操作を選択してください。%n(i: insert / d: delete / a: select all / s: select where / u: update/ q: exit)%n");
+        baseMess = String.format("操作を選択してください。%n(i: insert / d: delete / a: select all / s: select where / u: update/ f: find/ q: exit)%n");
         finMess = String.format("システムを終了します。%n");
     }
 
@@ -60,27 +61,32 @@ public class FacadeOperationTest {
 
     @Test(expected = NullPointerException.class)
     public void constractor_insertOperationがnull() {
-        new FacadeOperation(null, c -> 0, c -> 0, c -> 0, c -> 0);
+        new FacadeOperation(null, c -> 0, c -> 0, c -> 0, c -> 0, c -> 0);
     }
 
     @Test(expected = NullPointerException.class)
     public void constractor_deleteOperationがnull() {
-        new FacadeOperation(c -> 0, null, c -> 0, c -> 0, c -> 0);
+        new FacadeOperation(c -> 0, null, c -> 0, c -> 0, c -> 0, c -> 0);
     }
 
     @Test(expected = NullPointerException.class)
     public void constractor_selectAllOperationがnull() {
-        new FacadeOperation(c -> 0, c -> 0, null, c -> 0, c -> 0);
+        new FacadeOperation(c -> 0, c -> 0, null, c -> 0, c -> 0, c -> 0);
     }
 
     @Test(expected = NullPointerException.class)
     public void constractor_selectWhereOperationがnull() {
-        new FacadeOperation(c -> 0, c -> 0, c -> 0, null, c -> 0);
+        new FacadeOperation(c -> 0, c -> 0, c -> 0, null, c -> 0, c -> 0);
     }
 
     @Test(expected = NullPointerException.class)
     public void constractor_updateOperationがnull() {
-        new FacadeOperation(c -> 0, c -> 0, c -> 0, c -> 0, null);
+        new FacadeOperation(c -> 0, c -> 0, c -> 0, c -> 0, null, c -> 0);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void constractor_selectIdOperationがnull() {
+        new FacadeOperation(c -> 0, c -> 0, c -> 0, c -> 0, c -> 0, null);
     }
 
     @Test(expected = NullPointerException.class)
@@ -160,6 +166,17 @@ public class FacadeOperationTest {
         AtomicInteger callCount = new AtomicInteger();
         operation.updateOperation = c -> callCount.addAndGet(1);
         List<String> commands = Arrays.asList("u", "U", "update", "Update", "UPDATE", "upd", "q");
+        int expected = 5;
+
+        executeTestSuite(commands);
+        assertThat(callCount.get(), is(expected));
+    }
+
+    @Test
+    public void execute_findid処理の実施() {
+        AtomicInteger callCount = new AtomicInteger();
+        operation.selectIdOperation = c -> callCount.addAndGet(1);
+        List<String> commands = Arrays.asList("f", "F", "find", "Find", "FIND", "q");
         int expected = 5;
 
         executeTestSuite(commands);
